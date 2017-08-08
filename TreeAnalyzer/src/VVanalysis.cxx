@@ -1,9 +1,11 @@
 
 // Local include(s):
 #include "../include/VVanalysis.h"
+#include "../include/VVAnalysisTools.h"
 
 // External include(s):
 // #include "../GoodRunsLists/include/TGoodRunsListReader.h"
+
 
 #include <TMath.h>
 #include "TGraph.h"
@@ -199,22 +201,9 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   std::vector<UZH::Jet> goodFatJets;
   std::vector<UZH::Jet> goodGenJets;
   std::vector<UZH::GenParticle> GenQuarks;
+  FindGeneratedQuarks(m_genParticle, m_isData, GenQuarks);
   
-  if(!m_isData){
-      for(int i=0;i< m_genParticle.N;i++)
-      {
-        bool containsV=0;
-        if(TMath::Abs(m_genParticle.pdgId->at(i)) > 6 or TMath::Abs(m_genParticle.pdgId->at(i)) <1) continue;
-        for(int ii=0;ii< m_genParticle.nMoth->at(i);ii++)
-        {
-           if(TMath::Abs(m_genParticle.mother->at(i).at(ii)) == 24 or TMath::Abs(m_genParticle.mother->at(i).at(ii)) == 23) containsV = 1;     
-        }
-        if (!containsV) continue;
-        UZH::GenParticle MyQuark( &m_genParticle, i );
-        GenQuarks.push_back(MyQuark);
-      }
-  }
-    
+     
     
   for ( int i = 0; i < (m_jetAK8.N); ++i ) {
    
@@ -338,17 +327,7 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
 
 }
 
- bool VVanalysis::isMergedVJet(TLorentzVector goodFatJet, std::vector<UZH::GenParticle> VdecayProducts) {
-    int associatedQuarks=0;
-    for(unsigned int i=0;i< VdecayProducts.size();i++)
-    {
-      TLorentzVector q = VdecayProducts[i].tlv();
-      if (goodFatJet.DeltaR(q) < 0.8) associatedQuarks +=1;
-
-    }
-    if (associatedQuarks ==2) return 1;
-    else return 0;   
-}
+ 
 
 void VVanalysis::FillValidationHists( ValHistsType ht, const TString& status ) {  
 

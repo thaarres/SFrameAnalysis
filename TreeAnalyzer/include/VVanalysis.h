@@ -78,7 +78,6 @@ public:
    /// Function called for every event
    virtual void ExecuteEvent( const SInputData&, Double_t ) throw( SError );
    
-   bool isMergedVJet(TLorentzVector goodFatJet, std::vector<UZH::GenParticle> VdecayProducts);
 private:
    
   // Input variable objects:
