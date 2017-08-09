@@ -1,6 +1,6 @@
-# SFrameAnalysis (thanks C.Lange)
+# SFrameAnalysis
 
-Repository using submodules for ntuple-based analysis (at PSI T3).
+Code for skimming UZH ntuples for top/W tagging scalefactor calculations
 
 ## Getting started
 
@@ -12,8 +12,9 @@ cd CMSSW_8_0_20/src
 cmsenv
 cd ../..
 ```
-Then clone this repository (or your fork of it):
+Get the right branch and get SFrame:
 ```
+git checkout -b VTopScalefactor origin/VTopScalefactor
 source init.sh
 ```
 
