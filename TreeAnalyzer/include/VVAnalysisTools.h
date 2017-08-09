@@ -10,4 +10,6 @@ std::vector<UZH::GenParticle> FindGeneratedQuarks(Ntuple::GenParticleNtupleObjec
 
 float ApplyPuppiSoftdropMassCorrections(UZH::Jet puppiJet,std::vector<TF1*> m_puppisd_corr, bool m_isData);
 
+std::vector<UZH::Electron> FindGoodLeptons(Ntuple::ElectronNtupleObject m_electrons);
+
 #endif

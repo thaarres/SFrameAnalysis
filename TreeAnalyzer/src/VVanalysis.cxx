@@ -89,6 +89,8 @@ void VVanalysis::BeginInputFile( const SInputData& ) throw( SError ) { //For eac
     m_jetAK8Puppi .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::JetSubstructure, (m_jetAK8PuppiName + "_").c_str() );
     m_jetAK8      .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::JetBasic|Ntuple::JetAnalysis|Ntuple::JetSubstructure|Ntuple::JetSoftdropSubjets, (m_jetAK8Name + "_").c_str() );
     m_eventInfo   .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::EventInfoBasic|Ntuple::EventInfoTrigger|Ntuple::EventInfoMETFilters, "" );
+    m_electron.ConnectVariables(     m_recoTreeName.c_str(), Ntuple::ElectronBasic|Ntuple::ElectronID, (m_electronName + "_").c_str() );
+    m_muon.ConnectVariables(         m_recoTreeName.c_str(), Ntuple::MuonBasic|Ntuple::MuonID|Ntuple::MuonIsolation, (m_muonName + "_").c_str() );
   }
   else {
     m_jetAK8Puppi .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::JetSubstructure, (m_jetAK8PuppiName + "_").c_str() );
@@ -96,11 +98,11 @@ void VVanalysis::BeginInputFile( const SInputData& ) throw( SError ) { //For eac
     m_eventInfo   .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::EventInfoBasic|Ntuple::EventInfoTrigger|Ntuple::EventInfoMETFilters|Ntuple::EventInfoTruth, "" );
     m_genParticle .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::GenParticleBasic, (m_genParticleName + "_").c_str() );
     m_genjetAK8   .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::GenJet, (m_genjetAK8Name + "_").c_str() );
+    m_electron.ConnectVariables(     m_recoTreeName.c_str(), Ntuple::ElectronBasic|Ntuple::ElectronID, (m_electronName + "_").c_str() );
+    m_muon.ConnectVariables(         m_recoTreeName.c_str(), Ntuple::MuonBasic|Ntuple::MuonID|Ntuple::MuonIsolation, (m_muonName + "_").c_str() );
   }
   // Unused collections
   // m_jetAK4.ConnectVariables(       m_recoTreeName.c_str(), Ntuple::JetBasic|Ntuple::JetAnalysis|Ntuple::JetTruth, (m_jetAK4Name + "_").c_str() );
-  // m_electron.ConnectVariables(     m_recoTreeName.c_str(), Ntuple::ElectronBasic|Ntuple::ElectronID, (m_electronName + "_").c_str() );
-  // m_muon.ConnectVariables(         m_recoTreeName.c_str(), Ntuple::MuonBasic|Ntuple::MuonID|Ntuple::MuonIsolation, (m_muonName + "_").c_str() );
   // m_missingEt.ConnectVariables(    m_recoTreeName.c_str(), Ntuple::MissingEtBasic, (m_missingEtName + "_").c_str() );
   
   m_logger << INFO << "Connecting input variables completed" << SLogger::endmsg;
@@ -208,7 +210,10 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   //-------------Select two fat jets-------------//
   std::vector<UZH::Jet> goodFatJets;
   std::vector<UZH::Jet> goodGenJets;
-  std::vector<UZH::GenParticle> GenQuarks = FindGeneratedQuarks(m_genParticle, m_isData);
+  std::vector<UZH::GenParticle> GenQuarks  = FindGeneratedQuarks(m_genParticle, m_isData);
+  std::vector<UZH::Electron> goodElectrons = FindGoodLeptons(m_electron);
+  std::cout << goodElectrons.size() << std::endl;
+ // std::vector<UZH::Muon>     goodMuons     = FindGoodLeptons(m_muon);
 
   for ( int i = 0; i < (m_jetAK8.N); ++i ) {
    

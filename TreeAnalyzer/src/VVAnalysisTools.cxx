@@ -47,3 +47,20 @@ float ApplyPuppiSoftdropMassCorrections(UZH::Jet puppiJet,std::vector<TF1*> m_pu
     
  return puppiJet.softdrop_massCorr()*genCorr*recoCorr;
 }
+
+
+// bool ApplyOverlapLeptonVeto(){
+//     
+//     
+//  return 1;   
+// }
+
+std::vector<UZH::Electron> FindGoodLeptons(Ntuple::ElectronNtupleObject m_electrons){
+    std::vector<UZH::Electron> goodEle;
+    for(int i=0;i< m_electrons.N;i++)
+    {
+        UZH::Electron ele(&m_electrons,i);
+        goodEle.push_back(ele);
+    }
+    return goodEle;
+}
