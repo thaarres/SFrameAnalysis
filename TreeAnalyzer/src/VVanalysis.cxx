@@ -144,7 +144,8 @@ void VVanalysis::BeginInputData( const SInputData& ) throw( SError ) { //called 
   DeclareVariable( HLTHT650_MJJ900DEtaJJ1p5       , "HLTHT650_MJJ900DEtaJJ1p5");
   DeclareVariable( HLTHT800                       , "HLTHT800");
   DeclareVariable( nLeptonOverlap                 , "nLeptonOverlap");
-  DeclareVariable( jj_mergedVTruth                , "jj_mergedVTruth");
+  DeclareVariable( jj_mergedVTruth_jet1           , "jj_mergedVTruth_jet1");
+  DeclareVariable( jj_mergedVTruth_jet2           , "jj_mergedVTruth_jet2");
 
   // // Declare the output histograms:
   // Book( TH1F( "Mjj_hist"     , "Mjj", 100, 0.0, 3000. ) );
@@ -207,11 +208,8 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   //-------------Select two fat jets-------------//
   std::vector<UZH::Jet> goodFatJets;
   std::vector<UZH::Jet> goodGenJets;
-  std::vector<UZH::GenParticle> GenQuarks;
-  FindGeneratedQuarks(m_genParticle, m_isData, GenQuarks);
-  
-     
-    
+  std::vector<UZH::GenParticle> GenQuarks = FindGeneratedQuarks(m_genParticle, m_isData);
+
   for ( int i = 0; i < (m_jetAK8.N); ++i ) {
    
     UZH::Jet myjet( &m_jetAK8, i );
@@ -319,7 +317,8 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   }
   
   // nLeptonOverlap                  =           ;
-  jj_mergedVTruth                 =  (isMergedVJet(goodFatJets[0].tlv(),GenQuarks) || isMergedVJet(goodFatJets[1].tlv(),GenQuarks));
+  jj_mergedVTruth_jet1                =  isMergedVJet(goodFatJets[0].tlv(),GenQuarks) ;
+  jj_mergedVTruth_jet2                =  isMergedVJet(goodFatJets[1].tlv(),GenQuarks) ;
   //
 
    
@@ -410,7 +409,8 @@ void VVanalysis::clearBranches() {
   HLTHT650_MJJ900DEtaJJ1p5      = -99;
   HLTHT800                      = -99;
   nLeptonOverlap                = -99;
-  jj_mergedVTruth               = -99;
+  jj_mergedVTruth_jet1          = -99;
+  jj_mergedVTruth_jet2          = -99;
 
 }
 
