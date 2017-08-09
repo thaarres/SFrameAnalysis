@@ -49,7 +49,7 @@ float ApplyPuppiSoftdropMassCorrections(UZH::Jet puppiJet,std::vector<TF1*> m_pu
 }
 
 
-bool ApplyOverlapLeptonVeto(std::vector<UZH::Electron> goodEle, std::vector<UZH::Muon> goodMu, TLorentzVector Jet){
+bool FoundNoLeptonOverlap(std::vector<UZH::Electron> goodEle, std::vector<UZH::Muon> goodMu, TLorentzVector Jet){
  
   for( unsigned int e =0;e< goodEle.size(); e++)
   {

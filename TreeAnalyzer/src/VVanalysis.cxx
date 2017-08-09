@@ -261,7 +261,7 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
       UZH::Jet selectedJet( &m_genjetAK8, jetIdx );
       goodGenJets.push_back(selectedJet);
     }
-    if(! ApplyOverlapLeptonVeto(goodElectrons,goodMuons,myjet.tlv()) ) continue;
+    if(! FoundNoLeptonOverlap(goodElectrons,goodMuons,myjet.tlv()) ) continue;
     goodFatJets.push_back(myjet);
   }
   //-------------Select two fat jets-------------//
