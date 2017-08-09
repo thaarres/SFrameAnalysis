@@ -42,6 +42,7 @@ VVanalysis::VVanalysis()
    DeclareProperty( "GenParticleName" ,         m_genParticleName         = "genParticle"   );
    
    DeclareProperty( "RecoTreeName"    ,         m_recoTreeName            = "physics" );
+   DeclareProperty( "PUPPIJEC"        ,         m_PUPPIJEC                = "weights/puppiCorr.root" );
    // DeclareProperty( "JSONName"        ,         m_jsonName                = std::string (std::getenv("SFRAME_DIR")) + "/../GoodRunsLists/JSON/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_Silver_v2.txt" );
    DeclareProperty( "IsData"          ,         m_isData                  = false );
 }
@@ -104,8 +105,14 @@ void VVanalysis::BeginInputFile( const SInputData& ) throw( SError ) { //For eac
   
   m_logger << INFO << "Connecting input variables completed" << SLogger::endmsg;
   
+  m_logger << INFO << "Initializing inputs for puppi softdop mass corrections" << SLogger::endmsg; 
+  TFile* file = TFile::Open( m_PUPPIJEC.c_str(),"READ");
+  if(file->IsZombie()) throw SError(SError::StopExecution);
+  m_puppisd_corr.push_back( dynamic_cast<TF1*>(file->Get("puppiJECcorr_gen")));
+  m_puppisd_corr.push_back( dynamic_cast<TF1*>(file->Get("puppiJECcorr_reco_0eta1v3")));
+  m_puppisd_corr.push_back( dynamic_cast<TF1*>(file->Get("puppiJECcorr_reco_1v3eta2v5")));
   
-   return;
+  return;
 
 }
 
@@ -228,7 +235,7 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
       float dR = myjet.DeltaR(mypuppijet);
       if ( dR > dRmin ) continue;
       dRmin = dR;
-      myjet.puppi_softdropmass= mypuppijet.softdrop_massCorr();
+      myjet.puppi_softdropmass= ApplyPuppiSoftdropMassCorrections(mypuppijet,m_puppisd_corr,m_isData);//mypuppijet.softdrop_massCorr();
       myjet.puppi_tau1        = mypuppijet.tau1();
       myjet.puppi_tau2        = mypuppijet.tau2();
     }
@@ -325,7 +332,8 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   jj_mergedVTruth_jet2                =  isMergedVJet(goodFatJets[1].tlv(),GenQuarks) ;
   //
 
-
+   
+  
   // }
   // TString StatusString = "Before_Cuts_";
   // FillValidationHists( GENERAL, StatusString );

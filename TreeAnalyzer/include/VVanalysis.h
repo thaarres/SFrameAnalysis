@@ -14,6 +14,7 @@
 
 // ROOT include(s):
 #include <TBits.h>
+#include <TFile.h>
 
 // External include(s):
 #include "../NtupleVariables/include/JetNtupleObject.h"
@@ -151,7 +152,10 @@ private:
   std::string m_genjetAK8Name;
   std::string m_jetAK8PuppiName;
   std::string m_genParticleName;
+  std::string m_PUPPIJEC;
   
+  std::vector<TF1*> m_puppisd_corr      ;
+
   
   
   // Names of the input/output trees:
