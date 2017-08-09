@@ -79,6 +79,9 @@ public:
    /// Function called for every event
    virtual void ExecuteEvent( const SInputData&, Double_t ) throw( SError );
    
+/// Function to obtain event weights for MC
+   virtual double getEventWeight();
+   
 private:
    
   // Input variable objects:
@@ -163,7 +166,6 @@ private:
   
   enum ValHistsType { GENERAL, ELECTRON, MUON, JETS };
   void FillValidationHists( ValHistsType, const TString& status );
-  double getEventWeight( );
   void clearBranches( );
   
   std::string m_jsonName;
