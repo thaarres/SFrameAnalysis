@@ -36,3 +36,14 @@ std::vector<UZH::GenParticle> FindGeneratedQuarks(Ntuple::GenParticleNtupleObjec
   }
   return GenQuarks;    
 }
+
+
+float ApplyPuppiSoftdropMassCorrections(UZH::Jet puppiJet,std::vector<TF1*> m_puppisd_corr, bool m_isData){
+ float genCorr =1;
+ if(!m_isData) genCorr = m_puppisd_corr[0]->Eval(puppiJet.pt());
+ float recoCorr = 1;
+ if( fabs(puppiJet.eta()) <= 1.3) recoCorr = m_puppisd_corr[1]->Eval(puppiJet.pt());
+ else if (fabs(puppiJet.eta()) > 1.3) recoCorr = m_puppisd_corr[2]->Eval(puppiJet.pt());
+    
+ return puppiJet.softdrop_massCorr()*genCorr*recoCorr;
+}
