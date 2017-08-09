@@ -133,7 +133,8 @@ private:
   float     HLTHT650_MJJ900DEtaJJ1p5      ; 
   float     HLTHT800                      ;                                        
   int       nLeptonOverlap                ; 
-  int       jj_mergedVTruth               ; 
+  int       jj_mergedVTruth_jet1          ; 
+  int       jj_mergedVTruth_jet2          ; 
   float     b_weight                      ;
   float     b_weightGen                   ;
   float     b_weightPU                    ;
