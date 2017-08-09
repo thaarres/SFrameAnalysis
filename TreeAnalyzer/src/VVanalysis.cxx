@@ -81,7 +81,7 @@ void VVanalysis::EndCycle() throw( SError ) { //Any finalisation steps should be
 
 }
 
-void VVanalysis::BeginInputFile( const SInputData& ) throw( SError ) { //For each new input file the user has to connect his input variables. (More on this later.) This has to be performed in this function.
+void VVanalysis::BeginInputFile( const SInputData& ) throw( SError ) { //For each new input file the user has to connect his input variables. This has to be performed in this function.
   
   m_logger << INFO << "Connecting input variables" << SLogger::endmsg;
   if (m_isData) {
@@ -117,9 +117,16 @@ void VVanalysis::BeginInputFile( const SInputData& ) throw( SError ) { //For eac
 }
 
 
-void VVanalysis::BeginInputData( const SInputData& ) throw( SError ) { //called once before processing each of the input data types. If you need to initialise output objects (histograms, etc.) before the event-by-event execution, you should do that here. Also the declaration of the output variables has to be done here.
+void VVanalysis::BeginInputData( const SInputData& id ) throw( SError ) { //called once before processing each of the input data types. If you need to initialise output objects (histograms, etc.) before the event-by-event execution, you should do that here. Also the declaration of the output variables has to be done here.
+  
+  if (!m_isData) m_pileupReweightingTool.BeginInputData( id );
+  
+  
   
   // Declare output variables:
+  DeclareVariable( b_weight                        , "weight"  );
+  DeclareVariable( b_weightGen                     , "weightgen");
+  DeclareVariable( b_weightPU                      , "weightPU");
   DeclareVariable( m_o_mjj                        , "mjj");
   DeclareVariable( m_o_genmjj                     , "genmjj");
   DeclareVariable( m_o_mpuppisoftdrop_jet1        , "jet1_softDrop_mass");
@@ -198,6 +205,10 @@ void VVanalysis::EndMasterInputData( const SInputData& ) throw( SError ){ //this
 void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError ) { //This is the main analysis function that is called for each event. It receives the weight of the event, as it is calculated by the framework from the luminosities and generator cuts defined in the XML configuration.
 
   clearBranches();
+  
+  if (!m_isData) {
+    b_weight= getEventWeight();
+  }
   
   ++m_allEvents;
   ( *m_test )[ 0 ]++;
@@ -411,7 +422,6 @@ void VVanalysis::clearBranches() {
   nLeptonOverlap                = -99;
   jj_mergedVTruth_jet1          = -99;
   jj_mergedVTruth_jet2          = -99;
-
 }
 
 
