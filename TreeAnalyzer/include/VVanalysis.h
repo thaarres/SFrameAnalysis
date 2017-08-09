@@ -150,6 +150,8 @@ private:
   //naming
   std::string m_jetAK8Name;
   std::string m_genjetAK8Name;
+  std::string m_muonName;
+  std::string m_electronName;
   std::string m_jetAK8PuppiName;
   std::string m_genParticleName;
   std::string m_PUPPIJEC;

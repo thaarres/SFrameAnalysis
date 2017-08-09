@@ -47,3 +47,63 @@ float ApplyPuppiSoftdropMassCorrections(UZH::Jet puppiJet,std::vector<TF1*> m_pu
     
  return puppiJet.softdrop_massCorr()*genCorr*recoCorr;
 }
+
+
+bool FoundNoLeptonOverlap(std::vector<UZH::Electron> goodEle, std::vector<UZH::Muon> goodMu, TLorentzVector Jet){
+ 
+  for( unsigned int e =0;e< goodEle.size(); e++)
+  {
+    if(Jet.DeltaR(goodEle.at(e).tlv()) < 0.8) return 0;  
+  }
+  for( unsigned int m =0;m< goodMu.size(); m++)
+  {
+    if(Jet.DeltaR(goodMu.at(m).tlv()) < 0.8) return 0;   
+  }
+  return 1;   
+}
+
+std::vector<UZH::Electron> FindGoodLeptons(Ntuple::ElectronNtupleObject m_electrons){
+    std::vector<UZH::Electron> goodEle;
+    for(int i=0;i< m_electrons.N;i++)
+    {
+        UZH::Electron ele(&m_electrons,i);
+        if( ele.pt() <= 35.) continue;
+        if( fabs( ele.superCluster_eta() ) >= 1.4442 && fabs( ele.superCluster_eta() ) <= 1.566 ) continue;
+        if( fabs( ele.superCluster_eta() ) >= 2.5 ) continue;
+        if( ! ele.isHeepElectron()  ) continue;
+        goodEle.push_back(ele);
+    }
+    return goodEle;
+}
+
+std::vector<UZH::Muon> FindGoodLeptons(Ntuple::MuonNtupleObject m_muons){
+    std::vector<UZH::Muon> goodMu;
+    for(int i=0;i< m_muons.N;i++)
+    {
+        UZH::Muon mu(&m_muons,i);
+        if( mu.pt() <= 30.) continue;
+        if( fabs( mu.eta() ) >= 2.4 ) continue;
+        if( ! mu.isTightMuon()  ) continue;
+        if( mu.trackIso()/mu.pt() >= 0.1 ) continue;
+        goodMu.push_back(mu);
+    }
+    return goodMu;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
