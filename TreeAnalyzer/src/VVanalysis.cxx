@@ -1,9 +1,11 @@
 
 // Local include(s):
 #include "../include/VVanalysis.h"
+#include "../include/VVAnalysisTools.h"
 
 // External include(s):
 // #include "../GoodRunsLists/include/TGoodRunsListReader.h"
+
 
 #include <TMath.h>
 #include "TGraph.h"
@@ -198,7 +200,11 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   //-------------Select two fat jets-------------//
   std::vector<UZH::Jet> goodFatJets;
   std::vector<UZH::Jet> goodGenJets;
-
+  std::vector<UZH::GenParticle> GenQuarks;
+  FindGeneratedQuarks(m_genParticle, m_isData, GenQuarks);
+  
+     
+    
   for ( int i = 0; i < (m_jetAK8.N); ++i ) {
    
     UZH::Jet myjet( &m_jetAK8, i );
@@ -306,7 +312,7 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   }
   
   // nLeptonOverlap                  =           ;
-  // jj_mergedVTruth                 =           ;
+  jj_mergedVTruth                 =  (isMergedVJet(goodFatJets[0].tlv(),GenQuarks) || isMergedVJet(goodFatJets[1].tlv(),GenQuarks));
   //
 
 
@@ -320,6 +326,8 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   return;
 
 }
+
+ 
 
 void VVanalysis::FillValidationHists( ValHistsType ht, const TString& status ) {  
 
