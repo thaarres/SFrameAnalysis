@@ -22,7 +22,7 @@ VVanalysis::VVanalysis()
    , m_muon                 ( this )
    , m_missingEt            ( this )
    , m_genParticle          ( this )
-   , m_pileupReweightingTool( this )
+   , m_pileupReweightingTool( this, "pileupReweighting" )
    , m_bTaggingScaleTool    ( this )
    , m_allEvents( "allEvents", this )
    , m_passedLoose( "passedLoose", this )
@@ -40,11 +40,14 @@ VVanalysis::VVanalysis()
    DeclareProperty( "GenJetAK8Name"   ,         m_genjetAK8Name           = "genJetAK8"     );
    DeclareProperty( "JetAK8PuppiName" ,         m_jetAK8PuppiName         = "jetAK8_puppi"  );
    DeclareProperty( "GenParticleName" ,         m_genParticleName         = "genParticle"   );
+   DeclareProperty( "ElectronName"    ,         m_electronName            = "el"            );
+   DeclareProperty( "MuonName"        ,         m_muonName                = "mu"            );
    
    DeclareProperty( "RecoTreeName"    ,         m_recoTreeName            = "physics" );
    DeclareProperty( "PUPPIJEC"        ,         m_PUPPIJEC                = "weights/puppiCorr.root" );
    // DeclareProperty( "JSONName"        ,         m_jsonName                = std::string (std::getenv("SFRAME_DIR")) + "/../GoodRunsLists/JSON/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_Silver_v2.txt" );
    DeclareProperty( "IsData"          ,         m_isData                  = false );
+   
 }
 
 VVanalysis::~VVanalysis() {
@@ -98,7 +101,7 @@ void VVanalysis::BeginInputFile( const SInputData& ) throw( SError ) { //For eac
     m_eventInfo   .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::EventInfoBasic|Ntuple::EventInfoTrigger|Ntuple::EventInfoMETFilters|Ntuple::EventInfoTruth, "" );
     m_genParticle .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::GenParticleBasic, (m_genParticleName + "_").c_str() );
     m_genjetAK8   .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::GenJet, (m_genjetAK8Name + "_").c_str() );
-    m_electron.ConnectVariables(     m_recoTreeName.c_str(), Ntuple::ElectronBasic|Ntuple::ElectronID, (m_electronName + "_").c_str() );
+    m_electron.ConnectVariables(     m_recoTreeName.c_str(), Ntuple::ElectronBasic|Ntuple::ElectronID|Ntuple::ElectronSuperCluster, (m_electronName + "_").c_str() );
     m_muon.ConnectVariables(         m_recoTreeName.c_str(), Ntuple::MuonBasic|Ntuple::MuonID|Ntuple::MuonIsolation, (m_muonName + "_").c_str() );
   }
   // Unused collections
@@ -217,14 +220,12 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
    
    
    if( m_jetAK8.N < 2 ) throw SError( SError::SkipEvent );
-   
   //-------------Select two fat jets-------------//
   std::vector<UZH::Jet> goodFatJets;
   std::vector<UZH::Jet> goodGenJets;
   std::vector<UZH::GenParticle> GenQuarks  = FindGeneratedQuarks(m_genParticle, m_isData);
   std::vector<UZH::Electron> goodElectrons = FindGoodLeptons(m_electron);
-  std::cout << goodElectrons.size() << std::endl;
- // std::vector<UZH::Muon>     goodMuons     = FindGoodLeptons(m_muon);
+  std::vector<UZH::Muon>     goodMuons     = FindGoodLeptons(m_muon);
 
   for ( int i = 0; i < (m_jetAK8.N); ++i ) {
    
@@ -260,6 +261,7 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
       UZH::Jet selectedJet( &m_genjetAK8, jetIdx );
       goodGenJets.push_back(selectedJet);
     }
+    if(! ApplyOverlapLeptonVeto(goodElectrons,goodMuons,myjet.tlv()) ) continue;
     goodFatJets.push_back(myjet);
   }
   //-------------Select two fat jets-------------//
