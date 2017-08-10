@@ -26,6 +26,7 @@ VVanalysis::VVanalysis()
    , m_genParticle          ( this )
    , m_pileupReweightingTool( this, "pileupReweighting" )
    , m_bTaggingScaleTool    ( this )
+   , m_xSec                 ()
    , m_allEvents( "allEvents", this )
    , m_passedLoose( "passedLoose", this )
    , m_passedPuppi( "passedPuppi", this )
@@ -51,6 +52,8 @@ VVanalysis::VVanalysis()
    DeclareProperty( "IsData"          ,         m_isData                  = false );
    DeclareProperty( "IsSignal"        ,         m_isSignal                = true );
    DeclareProperty( "Channel"         ,         m_Channel                 = "qV" );
+   
+   nSumGenWeights           = 0;
    
 }
 
@@ -96,8 +99,8 @@ void VVanalysis::BeginInputFile( const SInputData& ) throw( SError ) { //For eac
     m_jetAK8Puppi .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::JetBasic|Ntuple::JetSubstructure, (m_jetAK8PuppiName + "_").c_str() );
     m_jetAK8      .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::JetBasic|Ntuple::JetAnalysis|Ntuple::JetSubstructure|Ntuple::JetSoftdropSubjets, (m_jetAK8Name + "_").c_str() );
     m_eventInfo   .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::EventInfoBasic|Ntuple::EventInfoTrigger|Ntuple::EventInfoMETFilters, "" );
-    m_electron.ConnectVariables(     m_recoTreeName.c_str(), Ntuple::ElectronBasic|Ntuple::ElectronID, (m_electronName + "_").c_str() );
-    m_muon.ConnectVariables(         m_recoTreeName.c_str(), Ntuple::MuonBasic|Ntuple::MuonID|Ntuple::MuonIsolation, (m_muonName + "_").c_str() );
+    m_electron    .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::ElectronBasic|Ntuple::ElectronID, (m_electronName + "_").c_str() );
+    m_muon        .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::MuonBasic|Ntuple::MuonID|Ntuple::MuonIsolation, (m_muonName + "_").c_str() );
   }
   else {
     m_jetAK8Puppi .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::JetBasic|Ntuple::JetSubstructure, (m_jetAK8PuppiName + "_").c_str() );
@@ -105,8 +108,8 @@ void VVanalysis::BeginInputFile( const SInputData& ) throw( SError ) { //For eac
     m_eventInfo   .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::EventInfoBasic|Ntuple::EventInfoTrigger|Ntuple::EventInfoMETFilters|Ntuple::EventInfoTruth, "" );
     m_genParticle .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::GenParticleBasic, (m_genParticleName + "_").c_str() );
     m_genjetAK8   .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::GenJet, (m_genjetAK8Name + "_").c_str() );
-    m_electron.ConnectVariables(     m_recoTreeName.c_str(), Ntuple::ElectronBasic|Ntuple::ElectronID|Ntuple::ElectronSuperCluster, (m_electronName + "_").c_str() );
-    m_muon.ConnectVariables(         m_recoTreeName.c_str(), Ntuple::MuonBasic|Ntuple::MuonID|Ntuple::MuonIsolation, (m_muonName + "_").c_str() );
+    m_electron    .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::ElectronBasic|Ntuple::ElectronID|Ntuple::ElectronSuperCluster, (m_electronName + "_").c_str() );
+    m_muon        .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::MuonBasic|Ntuple::MuonID|Ntuple::MuonIsolation, (m_muonName + "_").c_str() );
   }
   // Unused collections
   // m_jetAK4.ConnectVariables(       m_recoTreeName.c_str(), Ntuple::JetBasic|Ntuple::JetAnalysis|Ntuple::JetTruth, (m_jetAK4Name + "_").c_str() );
@@ -121,6 +124,13 @@ void VVanalysis::BeginInputFile( const SInputData& ) throw( SError ) { //For eac
   m_puppisd_corr.push_back( dynamic_cast<TF1*>(file->Get("puppiJECcorr_reco_0eta1v3")));
   m_puppisd_corr.push_back( dynamic_cast<TF1*>(file->Get("puppiJECcorr_reco_1v3eta2v5")));
   
+  // Get cross section
+  b_xSec                        = 1.;
+  TString infile = TString(this->GetHistInputFile()->GetName());
+  b_xSec  = m_xSec.getLumiWeight( infile ); 
+  m_logger << INFO << "Cross section set to " << b_xSec << " for file " << infile <<  SLogger::endmsg;
+  if( b_xSec < 0.) throw SError( SError::SkipFile );
+
   return;
 
 }
@@ -130,12 +140,12 @@ void VVanalysis::BeginInputData( const SInputData& id ) throw( SError ) { //call
   
   if (!m_isData) m_pileupReweightingTool.BeginInputData( id );
   
-  
-  
   // Declare output variables:
-  DeclareVariable( b_weight                        , "weight"  );
-  DeclareVariable( b_weightGen                     , "weightgen");
-  DeclareVariable( b_weightPU                      , "weightPU");
+  DeclareVariable( nSumGenWeights                 , "SumEvents"  );
+  DeclareVariable( b_weight                       , "weight"  );
+  DeclareVariable( b_weightGen                    , "weightgen");
+  DeclareVariable( b_weightPU                     , "weightPU");
+  DeclareVariable( b_xSec                         , "xSec");
   DeclareVariable( m_o_mjj                        , "mjj");
   DeclareVariable( m_o_genmjj                     , "genmjj");
   DeclareVariable( m_o_mpuppisoftdrop_jet1        , "jet1_softDrop_mass");
@@ -201,7 +211,7 @@ void VVanalysis::BeginMasterInputData( const SInputData& ) throw( SError ){
 }
 
 void VVanalysis::EndMasterInputData( const SInputData& ) throw( SError ){ //this is a good place to print some summaries, do some final calculations on the created histograms (for instance fitting them), etc
-  
+    
   m_logger << INFO << "Number of all processed events      :  "<< *m_allEvents   << "   " << ( m_test->size() > 0 ? ( *m_test )[ 0 ] : 0 )<< SLogger::endmsg;
   m_logger << INFO << "Number of events passing pt, eta    :  "<< *m_passedLoose << "   " << ( m_test->size() > 1 ? ( *m_test )[ 1 ] : 0 )<< SLogger::endmsg;
   m_logger << INFO << "Found two PUPPI jets matched to AK8 :  "<< *m_passedPuppi << "   " << ( m_test->size() > 2 ? ( *m_test )[ 2 ] : 0 )<< SLogger::endmsg;
@@ -219,7 +229,10 @@ void VVanalysis::EndMasterInputData( const SInputData& ) throw( SError ){ //this
 
 
 void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError ) { //This is the main analysis function that is called for each event. It receives the weight of the event, as it is calculated by the framework from the luminosities and generator cuts defined in the XML configuration.
-
+  
+  float gW = (m_eventInfo.genEventWeight < 0) ? -1 : 1; 
+  nSumGenWeights += gW;
+  
   clearBranches();
   
   if (!m_isData) {
@@ -433,11 +446,10 @@ double VVanalysis::getEventWeight() {
 
 
 void VVanalysis::clearBranches() {
-  
-  b_weight = 1.;
-  b_weightGen = 1.;
-  b_weightPU = 1.;
-  b_weightBtag = 1.;
+  b_weight                      = 1.;
+  b_weightGen                   = 1.;
+  b_weightPU                    = 1.;
+  b_weightBtag                  = 1.;
   
   m_o_mjj                       = -99;
   m_o_genmjj                    = -99;
