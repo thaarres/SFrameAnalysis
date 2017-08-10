@@ -107,8 +107,8 @@ private:
   SSummedVar< Int_t > m_allEvents; //!
   SSummedVar< Int_t > m_passedLoose; //!
   SSummedVar< Int_t > m_passedPuppi; //!
-  SSummedVar< Int_t > m_passedMjj; //!
   SSummedVar< Int_t > m_passedDEta; //!
+  SSummedVar< Int_t > m_passedMjj; //!
   SSummedVar< Int_t > m_passedEvents; //!
   SSummedVar< std::vector< Int_t > > m_test; //!
   
@@ -163,7 +163,7 @@ private:
   
   std::vector<TF1*> m_puppisd_corr      ;
 
-  
+  std::vector<int> debugEvent;
   
   // Names of the input/output trees:
   std::string m_recoTreeName;       ///< name of tree with reconstructed objects in ntuple
@@ -174,7 +174,9 @@ private:
   void clearBranches( );
   
   std::string m_jsonName;
+  std::string m_Channel;
   bool        m_isData;
+  bool        m_isSignal;
   
   
   

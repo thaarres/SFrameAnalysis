@@ -15,4 +15,8 @@ bool FoundNoLeptonOverlap(std::vector<UZH::Electron> goodEle, std::vector<UZH::M
 std::vector<UZH::Electron> FindGoodLeptons(Ntuple::ElectronNtupleObject m_electrons);
 std::vector<UZH::Muon> FindGoodLeptons(Ntuple::MuonNtupleObject m_muons);
 
+bool SignalIsHad( Ntuple::GenParticleNtupleObject data_ , std::string m_Channel);
+
+std::vector<UZH::Jet> SortAfterPuppiSDMass(std::vector <UZH::Jet> jets);
+
 #endif
