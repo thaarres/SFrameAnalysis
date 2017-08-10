@@ -31,6 +31,7 @@
 // #include "../GoodRunsLists/include/TGoodRunsList.h"
 #include "../PileupReweightingTool/include/PileupReweightingTool.h"
 #include "../BTaggingTools/include/BTaggingScaleTool.h"
+#include "../TreeAnalyzer/include/LumiWeight.h"
 
 class TH1D;
 class TH2D;
@@ -98,7 +99,8 @@ private:
   // Further objects
   // Root::TGoodRunsList m_grl;
   PileupReweightingTool m_pileupReweightingTool;
-  BTaggingScaleTool m_bTaggingScaleTool;
+  BTaggingScaleTool     m_bTaggingScaleTool;
+  LumiWeight            m_xSec;
   
   // Some counters:
   //
@@ -111,8 +113,10 @@ private:
   SSummedVar< std::vector< Int_t > > m_test; //!
   
   Ntuple::JetNtupleObject         m_genjetAK8;    ///< jet container
-  // The output variables
   
+  float     nSumGenWeights;
+  
+  // The output variables
   float     m_o_mjj                       ; 
   float     m_o_genmjj                    ; 
   float     m_o_mpuppisoftdrop_jet1       ; 
@@ -139,6 +143,7 @@ private:
   int       nLeptonOverlap                ; 
   int       jj_mergedVTruth_jet1          ; 
   int       jj_mergedVTruth_jet2          ; 
+  double    b_xSec                        ;
   float     b_weight                      ;
   float     b_weightGen                   ;
   float     b_weightPU                    ;
