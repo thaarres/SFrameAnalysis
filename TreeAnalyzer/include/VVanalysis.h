@@ -153,7 +153,11 @@ private:
   std::string m_jetAK8PuppiName;
   std::string m_genParticleName;
   std::string m_PUPPIJEC;
-  
+  std::string m_jetAK4Name;            ///< name of AK4 jet collection in tree with reconstructed objects
+  std::string m_electronName;       ///< name of electron collection in tree with reconstructed objects
+  std::string m_muonName;       ///< name of muon collection in tree with reconstructed objects
+  std::string m_missingEtName;       ///< name of missing E_T collection in tree with reconstructed objects
+
   std::vector<TF1*> m_puppisd_corr      ;
 
   
