@@ -9,6 +9,8 @@
 
 #include <TMath.h>
 #include "TGraph.h"
+#include <iostream>
+#include <fstream>
 
 ClassImp( VVanalysis );
 
@@ -27,8 +29,8 @@ VVanalysis::VVanalysis()
    , m_allEvents( "allEvents", this )
    , m_passedLoose( "passedLoose", this )
    , m_passedPuppi( "passedPuppi", this )
-   , m_passedMjj( "passedMjj", this )
    , m_passedDEta( "passedDeta", this )
+   , m_passedMjj( "passedMjj", this )
    , m_passedEvents( "passedEvents", this )
    , m_test( "test", this ) 
    , m_genjetAK8( this )
@@ -47,6 +49,8 @@ VVanalysis::VVanalysis()
    DeclareProperty( "PUPPIJEC"        ,         m_PUPPIJEC                = "weights/puppiCorr.root" );
    // DeclareProperty( "JSONName"        ,         m_jsonName                = std::string (std::getenv("SFRAME_DIR")) + "/../GoodRunsLists/JSON/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_Silver_v2.txt" );
    DeclareProperty( "IsData"          ,         m_isData                  = false );
+   DeclareProperty( "IsSignal"        ,         m_isSignal                = true );
+   DeclareProperty( "Channel"         ,         m_Channel                 = "qV" );
    
 }
 
@@ -89,14 +93,14 @@ void VVanalysis::BeginInputFile( const SInputData& ) throw( SError ) { //For eac
   m_logger << INFO << "Connecting input variables" << SLogger::endmsg;
   if (m_isData) {
     
-    m_jetAK8Puppi .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::JetSubstructure, (m_jetAK8PuppiName + "_").c_str() );
+    m_jetAK8Puppi .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::JetBasic|Ntuple::JetSubstructure, (m_jetAK8PuppiName + "_").c_str() );
     m_jetAK8      .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::JetBasic|Ntuple::JetAnalysis|Ntuple::JetSubstructure|Ntuple::JetSoftdropSubjets, (m_jetAK8Name + "_").c_str() );
     m_eventInfo   .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::EventInfoBasic|Ntuple::EventInfoTrigger|Ntuple::EventInfoMETFilters, "" );
     m_electron.ConnectVariables(     m_recoTreeName.c_str(), Ntuple::ElectronBasic|Ntuple::ElectronID, (m_electronName + "_").c_str() );
     m_muon.ConnectVariables(         m_recoTreeName.c_str(), Ntuple::MuonBasic|Ntuple::MuonID|Ntuple::MuonIsolation, (m_muonName + "_").c_str() );
   }
   else {
-    m_jetAK8Puppi .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::JetSubstructure, (m_jetAK8PuppiName + "_").c_str() );
+    m_jetAK8Puppi .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::JetBasic|Ntuple::JetSubstructure, (m_jetAK8PuppiName + "_").c_str() );
     m_jetAK8      .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::JetBasic|Ntuple::JetAnalysis|Ntuple::JetSubstructure|Ntuple::JetTruth|Ntuple::JetSoftdropSubjets|Ntuple::JetSoftdropSubjetsTruth, (m_jetAK8Name + "_").c_str() );
     m_eventInfo   .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::EventInfoBasic|Ntuple::EventInfoTrigger|Ntuple::EventInfoMETFilters|Ntuple::EventInfoTruth, "" );
     m_genParticle .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::GenParticleBasic, (m_genParticleName + "_").c_str() );
@@ -176,7 +180,14 @@ void VVanalysis::EndInputData( const SInputData& ) throw( SError ) {
  //  TGraph mygraph( n, x_array, y_array );
  //  mygraph.SetName( "MyGraph" );
  //  WriteObj( mygraph, "graph_dir" );
-
+    
+//   std::ofstream myfile;
+//   myfile.open ("debug.txt");
+//   std::sort (debugEvent.begin(), debugEvent.end());
+//   for(int i=0;i< debugEvent.size();i++){
+//     myfile << debugEvent.at(i) << "\n";
+//   }
+//   myfile.close();
    return;
 
 }
@@ -194,8 +205,8 @@ void VVanalysis::EndMasterInputData( const SInputData& ) throw( SError ){ //this
   m_logger << INFO << "Number of all processed events      :  "<< *m_allEvents   << "   " << ( m_test->size() > 0 ? ( *m_test )[ 0 ] : 0 )<< SLogger::endmsg;
   m_logger << INFO << "Number of events passing pt, eta    :  "<< *m_passedLoose << "   " << ( m_test->size() > 1 ? ( *m_test )[ 1 ] : 0 )<< SLogger::endmsg;
   m_logger << INFO << "Found two PUPPI jets matched to AK8 :  "<< *m_passedPuppi << "   " << ( m_test->size() > 2 ? ( *m_test )[ 2 ] : 0 )<< SLogger::endmsg;
-  m_logger << INFO << "Number of events passing Mjj        :  "<< *m_passedMjj   << "   " << ( m_test->size() > 3 ? ( *m_test )[ 3 ] : 0 )<< SLogger::endmsg;
   m_logger << INFO << "Number of events passing dETa       :  "<< *m_passedDEta  << "   " << ( m_test->size() > 4 ? ( *m_test )[ 4 ] : 0 )<< SLogger::endmsg;
+  m_logger << INFO << "Number of events passing Mjj        :  "<< *m_passedMjj   << "   " << ( m_test->size() > 3 ? ( *m_test )[ 3 ] : 0 )<< SLogger::endmsg;
   m_logger << INFO << "Number of events passing selection  :  "<< *m_passedEvents<< "   " << ( m_test->size() > 5 ? ( *m_test )[ 5 ] : 0 )<< SLogger::endmsg;
   
   
@@ -214,7 +225,8 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   if (!m_isData) {
     b_weight= getEventWeight();
   }
-  
+  // for inclusive signal samples only take generated hadronic events
+  if( m_isSignal && !SignalIsHad( m_genParticle, m_Channel)) throw SError( SError::SkipEvent);
   ++m_allEvents;
   ( *m_test )[ 0 ]++;
    
@@ -227,23 +239,35 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   std::vector<UZH::Electron> goodElectrons = FindGoodLeptons(m_electron);
   std::vector<UZH::Muon>     goodMuons     = FindGoodLeptons(m_muon);
 
+  std::vector<int> puppiMatch;
   for ( int i = 0; i < (m_jetAK8.N); ++i ) {
    
     UZH::Jet myjet( &m_jetAK8, i );
+    if ( i == 0 && !myjet.IDTight()) break;
     if (! (myjet.pt() > 200       )) continue;
     if (! (fabs(myjet.eta()) < 2.5)) continue;
     if (! (myjet.IDTight()        )) continue;
   
     //Match to puppi jet
     float dRmin = 99.;
+    if(m_jetAK8Puppi.pt->size() < 2) throw SError( SError::SkipEvent);
     for ( int ii = 0; ii < abs((m_jetAK8Puppi.pt->size())); ++ii ) {
       UZH::Jet mypuppijet( &m_jetAK8Puppi, ii );
       float dR = myjet.DeltaR(mypuppijet);
       if ( dR > dRmin ) continue;
+      bool samePuppiJet =0;
+      for(int m=0;m<puppiMatch.size();m++)
+      {
+        if(ii == puppiMatch.at(m)) samePuppiJet=1;
+      }
+      if (samePuppiJet) continue;
+      puppiMatch.push_back(ii);
       dRmin = dR;
       myjet.puppi_softdropmass= ApplyPuppiSoftdropMassCorrections(mypuppijet,m_puppisd_corr,m_isData);//mypuppijet.softdrop_massCorr();
       myjet.puppi_tau1        = mypuppijet.tau1();
       myjet.puppi_tau2        = mypuppijet.tau2();
+       
+           
     }
     
     //Match to gen jet
@@ -264,6 +288,9 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
     if(! FoundNoLeptonOverlap(goodElectrons,goodMuons,myjet.tlv()) ) continue;
     goodFatJets.push_back(myjet);
   }
+  
+  
+
   //-------------Select two fat jets-------------//
   if( goodFatJets.size() < 2 ) throw SError( SError::SkipEvent );
   ++m_passedLoose;
@@ -285,29 +312,37 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
      ) throw SError( SError::SkipEvent );
   ++m_passedPuppi;
   ( *m_test )[ 2 ]++;
+  
+  std::vector<UZH::Jet> goodFatJets_sorted = SortAfterPuppiSDMass(goodFatJets);
+  
+  // dEta cut
+  if( fabs( (goodFatJets_sorted[0].tlv()).Eta() - (goodFatJets_sorted[1].tlv()).Eta() )  > 1.3 ) throw SError( SError::SkipEvent );
+  
+  //if( fabs( goodFatJets[0].eta() - goodFatJets[1].eta() )  > 1.3 ) throw SError( SError::SkipEvent );
+  //std::cout << "dEta " << fabs( goodFatJets[0].eta() - goodFatJets[1].eta() ) << std::endl;
+  ++m_passedDEta;
+  ( *m_test )[ 3 ]++;
+  //debugEvent.push_back(m_eventInfo.eventNumber);
 
   // Loose Mjj cut to slim down samples
-  TLorentzVector dijet = goodFatJets[0].tlv() + goodFatJets[1].tlv();
+  TLorentzVector dijet = goodFatJets_sorted[0].tlv() + goodFatJets_sorted[1].tlv();
   if( dijet.M() < 900. ) throw SError( SError::SkipEvent );
   ++m_passedMjj;
-  ( *m_test )[ 3 ]++;
-
-  // dEta cut
-  if( abs( (goodFatJets[0].tlv()).Eta() - (goodFatJets[1].tlv()).Eta() )  > 1.3 ) throw SError( SError::SkipEvent );
-  ++m_passedDEta;
   ( *m_test )[ 4 ]++;
+
   
   ++m_passedEvents;
   ( *m_test )[ 5 ]++;
+  
 
   // Fill tree 
   m_o_mjj                  = dijet.M();
-  m_o_mpuppisoftdrop_jet1  = goodFatJets[0].puppi_softdropmass;
-  m_o_mpuppisoftdrop_jet2  = goodFatJets[1].puppi_softdropmass;
-  m_o_tau1_jet1            = goodFatJets[0].puppi_tau1;
-  m_o_tau1_jet2            = goodFatJets[1].puppi_tau2;
-  m_o_tau2_jet1            = goodFatJets[0].puppi_tau1;
-  m_o_tau2_jet2            = goodFatJets[1].puppi_tau2;
+  m_o_mpuppisoftdrop_jet1  = goodFatJets_sorted[0].puppi_softdropmass;
+  m_o_mpuppisoftdrop_jet2  = goodFatJets_sorted[1].puppi_softdropmass;
+  m_o_tau1_jet1            = goodFatJets_sorted[0].puppi_tau1;
+  m_o_tau1_jet2            = goodFatJets_sorted[1].puppi_tau2;
+  m_o_tau2_jet1            = goodFatJets_sorted[0].puppi_tau1;
+  m_o_tau2_jet2            = goodFatJets_sorted[1].puppi_tau2;
 
 
   bool isfired = false;
@@ -335,8 +370,8 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   }
   
   // nLeptonOverlap                  =           ;
-  jj_mergedVTruth_jet1                =  isMergedVJet(goodFatJets[0].tlv(),GenQuarks) ;
-  jj_mergedVTruth_jet2                =  isMergedVJet(goodFatJets[1].tlv(),GenQuarks) ;
+  jj_mergedVTruth_jet1                =  isMergedVJet(goodFatJets_sorted[0].tlv(),GenQuarks) ;
+  jj_mergedVTruth_jet2                =  isMergedVJet(goodFatJets_sorted[1].tlv(),GenQuarks) ;
   //
 
    
@@ -347,6 +382,7 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   // FillValidationHists( ELECTRON, StatusString );
   // FillValidationHists( MUON, StatusString );
   // FillValidationHists( JETS, StatusString );
+ 
 
   return;
 

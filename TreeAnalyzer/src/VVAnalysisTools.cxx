@@ -92,8 +92,46 @@ std::vector<UZH::Muon> FindGoodLeptons(Ntuple::MuonNtupleObject m_muons){
 
 
 
+bool SignalIsHad( Ntuple::GenParticleNtupleObject data_ , std::string m_Channel) {
+  
+  bool isSignal = false;
+  int nVs = 0;
+  
+  for( int p = 0; p < (data_.N); ++p ){
+    bool isHad = false;
+    if( (*data_.pt).at(p) < 0.01) continue;
+    if( fabs((*data_.pdgId).at(p)) != 24 and fabs((*data_.pdgId).at(p)) != 23  and fabs((*data_.pdgId).at(p)) != 25) continue;
+    if ((*data_.dau)[p].size() < 2) continue;
+    for( unsigned int d = 0; d < (*data_.dau)[p].size(); ++d ) {
+      if( fabs((*data_.dau)[p][d]) > 9) continue;
+      isHad = true;
+    }
+    if (!isHad) continue;
+    nVs ++;
+  }
+  
+  if (m_Channel.find("qV")!=std::string::npos && nVs>0) isSignal = true;
+  if (m_Channel.find("VV")!=std::string::npos && nVs>1) isSignal = true;
+  return isSignal;
+}
 
 
+std::vector<UZH::Jet> SortAfterPuppiSDMass(std::vector <UZH::Jet> jets){
+    std::vector<float> mass;
+    std::map<float,int> map;
+    for(unsigned int i=0;i< jets.size(); i++)
+    {
+      mass.push_back(jets[i].puppi_softdropmass);
+      map[jets[i].puppi_softdropmass] = i;
+    }
+    std::sort(mass.begin(),mass.end());
+    std::vector<UZH::Jet> sorted;
+    for(unsigned int i=0;i<mass.size();i++)
+    {
+      sorted.push_back(jets.at(map[mass.at(mass.size()-i-1)]));
+    }
+    return sorted;
+}
 
 
 
