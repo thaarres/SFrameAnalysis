@@ -50,7 +50,7 @@ VVanalysis::VVanalysis()
    DeclareProperty( "PUPPIJEC"        ,         m_PUPPIJEC                = "weights/puppiCorr.root" );
    // DeclareProperty( "JSONName"        ,         m_jsonName                = std::string (std::getenv("SFRAME_DIR")) + "/../GoodRunsLists/JSON/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_Silver_v2.txt" );
    DeclareProperty( "IsData"          ,         m_isData                  = false );
-   DeclareProperty( "IsSignal"        ,         m_isSignal                = true );
+   DeclareProperty( "IsSignal"        ,         m_isSignal                = false );
    DeclareProperty( "Channel"         ,         m_Channel                 = "qV" );
    
    nSumGenWeights           = 0;
@@ -131,6 +131,7 @@ void VVanalysis::BeginInputFile( const SInputData& ) throw( SError ) { //For eac
   m_logger << INFO << "Cross section set to " << b_xSec << " for file " << infile <<  SLogger::endmsg;
   if( b_xSec < 0.) throw SError( SError::SkipFile );
 
+  
   return;
 
 }
@@ -141,7 +142,8 @@ void VVanalysis::BeginInputData( const SInputData& id ) throw( SError ) { //call
   if (!m_isData) m_pileupReweightingTool.BeginInputData( id );
   
   // Declare output variables:
-  DeclareVariable( nSumGenWeights                 , "SumEvents"  );
+  DeclareVariable( b_event                        , "event"  );
+  DeclareVariable( b_run                          , "run"  );
   DeclareVariable( b_weight                       , "weight"  );
   DeclareVariable( b_weightGen                    , "weightgen");
   DeclareVariable( b_weightPU                     , "weightPU");
@@ -156,6 +158,8 @@ void VVanalysis::BeginInputData( const SInputData& id ) throw( SError ) { //call
   DeclareVariable( m_o_tau1_jet2                  , "jet2_tau1");
   DeclareVariable( m_o_tau2_jet1                  , "jet1_tau2");  
   DeclareVariable( m_o_tau2_jet2                  , "jet2_tau2");
+  DeclareVariable( m_o_tau21_jet1                 , "jet1_tau21"); 
+  DeclareVariable( m_o_tau21_jet2                 , "jet2_tau21"); 
   DeclareVariable( Flag_goodVertices              , "Flag_goodVertices");
   DeclareVariable( Flag_globalTightHalo2016Filter , "Flag_globalTightHalo2016Filter");
   DeclareVariable( Flag_HBHENoiseFilter           , "Flag_HBHENoiseFilter");
@@ -178,6 +182,7 @@ void VVanalysis::BeginInputData( const SInputData& id ) throw( SError ) { //call
   
  
   m_test->resize( 6, 0 ); // Reserve two entries in vector for counting entries:
+  TH1* genEvents = Book(TH1F("genEvents", "number of generated Events",2,0,2));
               
    return;
 }
@@ -219,7 +224,7 @@ void VVanalysis::EndMasterInputData( const SInputData& ) throw( SError ){ //this
   m_logger << INFO << "Number of events passing Mjj        :  "<< *m_passedMjj   << "   " << ( m_test->size() > 3 ? ( *m_test )[ 3 ] : 0 )<< SLogger::endmsg;
   m_logger << INFO << "Number of events passing selection  :  "<< *m_passedEvents<< "   " << ( m_test->size() > 5 ? ( *m_test )[ 5 ] : 0 )<< SLogger::endmsg;
   
-  
+  m_logger << INFO << "Number of generated Events (weighted) : "<< nSumGenWeights << SLogger::endmsg;
   
    return;
 
@@ -232,6 +237,7 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   
   float gW = (m_eventInfo.genEventWeight < 0) ? -1 : 1; 
   nSumGenWeights += gW;
+  Hist( "genEvents" )->Fill(gW);
   
   clearBranches();
   
@@ -269,7 +275,7 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
       float dR = myjet.DeltaR(mypuppijet);
       if ( dR > dRmin ) continue;
       bool samePuppiJet =0;
-      for(int m=0;m<puppiMatch.size();m++)
+      for(unsigned int m=0;m<puppiMatch.size();m++)
       {
         if(ii == puppiMatch.at(m)) samePuppiJet=1;
       }
@@ -302,7 +308,10 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
     goodFatJets.push_back(myjet);
   }
   
-  
+
+
+
+
 
   //-------------Select two fat jets-------------//
   if( goodFatJets.size() < 2 ) throw SError( SError::SkipEvent );
@@ -342,13 +351,13 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   if( dijet.M() < 900. ) throw SError( SError::SkipEvent );
   ++m_passedMjj;
   ( *m_test )[ 4 ]++;
-
+  //debugEvent.push_back(m_eventInfo.eventNumber);
   
   ++m_passedEvents;
   ( *m_test )[ 5 ]++;
   
 
-  // Fill tree 
+  // Fill tree
   m_o_mjj                  = dijet.M();
   m_o_mpuppisoftdrop_jet1  = goodFatJets_sorted[0].puppi_softdropmass;
   m_o_mpuppisoftdrop_jet2  = goodFatJets_sorted[1].puppi_softdropmass;
@@ -356,6 +365,8 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   m_o_tau1_jet2            = goodFatJets_sorted[1].puppi_tau2;
   m_o_tau2_jet1            = goodFatJets_sorted[0].puppi_tau1;
   m_o_tau2_jet2            = goodFatJets_sorted[1].puppi_tau2;
+  m_o_tau21_jet1           = goodFatJets_sorted[0].puppi_tau2/goodFatJets_sorted[0].puppi_tau1;
+  m_o_tau21_jet2           = goodFatJets_sorted[1].puppi_tau2/goodFatJets_sorted[1].puppi_tau1;
 
 
   bool isfired = false;
@@ -366,7 +377,9 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
     if( (it->first).find("PFHT650_WideJetMJJ900DEtaJJ1p5")  != std::string::npos) HLTHT650_MJJ900DEtaJJ1p5  = it->second;
     if( (it->first).find("PFHT800_v")                       != std::string::npos) HLTHT800                  = it->second;
   }
-
+  
+  b_event                         = m_eventInfo.eventNumber;
+  b_run                           = m_eventInfo.runNumber;
   Flag_goodVertices               = m_eventInfo.PV_filter;
   Flag_globalTightHalo2016Filter  = m_eventInfo.passFilter_CSCHalo;
   Flag_HBHENoiseFilter            = m_eventInfo.passFilter_HBHELoose;
@@ -375,6 +388,7 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   Flag_badChargedHadronFilter     = m_eventInfo.passFilter_chargedHadronTrackResolution;
   Flag_badMuonFilter              = m_eventInfo.passFilter_muonBadTrack;
   Flag_ECALDeadCell               = m_eventInfo.passFilter_ECALDeadCell;
+  
 
   if(!m_isData){
     m_o_genmjj                      = (goodGenJets[0].tlv() + goodGenJets[1].tlv()).M();
@@ -451,6 +465,7 @@ void VVanalysis::clearBranches() {
   b_weightPU                    = 1.;
   b_weightBtag                  = 1.;
   
+  
   m_o_mjj                       = -99;
   m_o_genmjj                    = -99;
   m_o_mpuppisoftdrop_jet1       = -99;
@@ -461,6 +476,8 @@ void VVanalysis::clearBranches() {
   m_o_tau1_jet2                 = -99;
   m_o_tau2_jet1                 = -99;
   m_o_tau2_jet2                 = -99;
+  m_o_tau21_jet1                = -99;
+  m_o_tau21_jet2                = -99;
   Flag_goodVertices             = -99;
   Flag_globalTightHalo2016Filter= -99;
   Flag_HBHENoiseFilter          = -99;

@@ -127,6 +127,8 @@ private:
   float     m_o_tau1_jet2                 ; 
   float     m_o_tau2_jet1                 ; 
   float     m_o_tau2_jet2                 ; 
+  float     m_o_tau21_jet1                ; 
+  float     m_o_tau21_jet2                ; 
   int       Flag_goodVertices             ; 
   int       Flag_globalTightHalo2016Filter; 
   int       Flag_HBHENoiseFilter          ; 
@@ -144,6 +146,8 @@ private:
   int       jj_mergedVTruth_jet1          ; 
   int       jj_mergedVTruth_jet2          ; 
   double    b_xSec                        ;
+  double    b_event                       ;
+  double    b_run                         ;
   float     b_weight                      ;
   float     b_weightGen                   ;
   float     b_weightPU                    ;
