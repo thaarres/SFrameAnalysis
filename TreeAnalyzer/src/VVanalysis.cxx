@@ -145,21 +145,26 @@ void VVanalysis::BeginInputData( const SInputData& id ) throw( SError ) { //call
   DeclareVariable( b_event                        , "event"  );
   DeclareVariable( b_run                          , "run"  );
   DeclareVariable( b_weight                       , "weight"  );
-  DeclareVariable( b_weightGen                    , "weightgen");
-  DeclareVariable( b_weightPU                     , "weightPU");
-  DeclareVariable( b_xSec                         , "xSec");
-  DeclareVariable( m_o_mjj                        , "mjj");
-  DeclareVariable( m_o_genmjj                     , "genmjj");
-  DeclareVariable( m_o_mpuppisoftdrop_jet1        , "jet1_softDrop_mass");
-  DeclareVariable( m_o_mpuppisoftdrop_jet2        , "jet2_softDrop_mass");
-  DeclareVariable( m_o_mgensoftdrop_jet1          , "jet1_gen_softDrop_mass");
-  DeclareVariable( m_o_mgensoftdrop_jet2          , "jet2_gen_softDrop_mass");
-  DeclareVariable( m_o_tau1_jet1                  , "jet1_tau1");  
-  DeclareVariable( m_o_tau1_jet2                  , "jet2_tau1");
-  DeclareVariable( m_o_tau2_jet1                  , "jet1_tau2");  
-  DeclareVariable( m_o_tau2_jet2                  , "jet2_tau2");
-  DeclareVariable( m_o_tau21_jet1                 , "jet1_tau21"); 
-  DeclareVariable( m_o_tau21_jet2                 , "jet2_tau21"); 
+  DeclareVariable( b_weightGen                    , "genWeight");
+  DeclareVariable( b_weightPU                     , "puWeight");
+  DeclareVariable( b_xSec                         , "xsec");
+  DeclareVariable( m_o_njj                        , "njj");
+  DeclareVariable( m_o_mjj                        , "jj_LV_mass");
+  DeclareVariable( m_o_genmjj                     , "jj_gen_partialMass");
+  DeclareVariable( m_o_mpuppisoftdrop_jet1        , "jj_l1_softDrop_mass");
+  DeclareVariable( m_o_mpuppisoftdrop_jet2        , "jj_l2_softDrop_mass");
+  DeclareVariable( m_o_mgensoftdrop_jet1          , "jj_l1_gen_softDrop_mass");
+  DeclareVariable( m_o_mgensoftdrop_jet2          , "jj_l2_gen_softDrop_mass");
+  DeclareVariable( m_o_tau1_jet1                  , "jj_l1_tau1");  
+  DeclareVariable( m_o_tau1_jet2                  , "jj_l2_tau1");
+  DeclareVariable( m_o_tau2_jet1                  , "jj_l1_tau2");  
+  DeclareVariable( m_o_tau2_jet2                  , "jj_l2_tau2");
+  DeclareVariable( m_o_tau21_jet1                 , "jj_l1_tau21"); 
+  DeclareVariable( m_o_tau21_jet2                 , "jj_l2_tau21");
+  DeclareVariable( m_o_pt_jet1                    , "jj_l1_pt");
+  DeclareVariable( m_o_genpt_jet1                 , "jj_l1_gen_pt");
+  DeclareVariable( m_o_pt_jet2                    , "jj_l2_pt");
+  DeclareVariable( m_o_genpt_jet2                 , "jj_l2_gen_pt");
   DeclareVariable( Flag_goodVertices              , "Flag_goodVertices");
   DeclareVariable( Flag_globalTightHalo2016Filter , "Flag_globalTightHalo2016Filter");
   DeclareVariable( Flag_HBHENoiseFilter           , "Flag_HBHENoiseFilter");
@@ -173,7 +178,9 @@ void VVanalysis::BeginInputData( const SInputData& id ) throw( SError ) { //call
   DeclareVariable( HLTHT650_MJJ950DEtaJJ1p5       , "HLTHT650_MJJ950DEtaJJ1p5");
   DeclareVariable( HLTHT650_MJJ900DEtaJJ1p5       , "HLTHT650_MJJ900DEtaJJ1p5");
   DeclareVariable( HLTHT800                       , "HLTHT800");
+  DeclareVariable( HLT_JJ                         , "HLT_JJ");
   DeclareVariable( nLeptonOverlap                 , "nLeptonOverlap");
+  DeclareVariable( m_o_jj_nOtherLeptons           , "jj_nOtherLeptons");
   DeclareVariable( jj_mergedVTruth_jet1           , "jj_mergedVTruth_jet1");
   DeclareVariable( jj_mergedVTruth_jet2           , "jj_mergedVTruth_jet2");
 
@@ -358,6 +365,8 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   
 
   // Fill tree
+  m_o_jj_nOtherLeptons     = goodElectrons.size()+goodMuons.size();
+  m_o_njj                  = goodFatJets_sorted.size();
   m_o_mjj                  = dijet.M();
   m_o_mpuppisoftdrop_jet1  = goodFatJets_sorted[0].puppi_softdropmass;
   m_o_mpuppisoftdrop_jet2  = goodFatJets_sorted[1].puppi_softdropmass;
@@ -367,8 +376,10 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   m_o_tau2_jet2            = goodFatJets_sorted[1].puppi_tau2;
   m_o_tau21_jet1           = goodFatJets_sorted[0].puppi_tau2/goodFatJets_sorted[0].puppi_tau1;
   m_o_tau21_jet2           = goodFatJets_sorted[1].puppi_tau2/goodFatJets_sorted[1].puppi_tau1;
-
-
+  m_o_pt_jet1              = goodFatJets_sorted[0].tlv().Pt();
+  m_o_pt_jet2              = goodFatJets_sorted[1].tlv().Pt();
+  
+  
   bool isfired = false;
   for( std::map<std::string,bool>::iterator it = (m_eventInfo.trigDecision)->begin(); it != (m_eventInfo.trigDecision)->end(); ++it){
     if( (it->first).find("AK8PFJet360_TrimMass30")          != std::string::npos) HLTJet360_TrimMass30      = it->second;
@@ -376,6 +387,7 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
     if( (it->first).find("PFHT650_WideJetMJJ950DEtaJJ1p5")  != std::string::npos) HLTHT650_MJJ950DEtaJJ1p5  = it->second;
     if( (it->first).find("PFHT650_WideJetMJJ900DEtaJJ1p5")  != std::string::npos) HLTHT650_MJJ900DEtaJJ1p5  = it->second;
     if( (it->first).find("PFHT800_v")                       != std::string::npos) HLTHT800                  = it->second;
+    if (HLTJet360_TrimMass30 or HLTHT700_TrimMass50 or HLTHT650_MJJ950DEtaJJ1p5 or HLTHT650_MJJ900DEtaJJ1p5 or HLTHT800) isfired = true;
   }
   
   b_event                         = m_eventInfo.eventNumber;
@@ -388,12 +400,15 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   Flag_badChargedHadronFilter     = m_eventInfo.passFilter_chargedHadronTrackResolution;
   Flag_badMuonFilter              = m_eventInfo.passFilter_muonBadTrack;
   Flag_ECALDeadCell               = m_eventInfo.passFilter_ECALDeadCell;
+  HLT_JJ                          = isfired;
   
 
   if(!m_isData){
     m_o_genmjj                      = (goodGenJets[0].tlv() + goodGenJets[1].tlv()).M();
     m_o_mgensoftdrop_jet1           = goodGenJets[0].softdropmass();
     m_o_mgensoftdrop_jet2           = goodGenJets[1].softdropmass();
+    m_o_genpt_jet1                  = goodGenJets[0].tlv().Pt();
+    m_o_genpt_jet2                  = goodGenJets[1].tlv().Pt();
   }
   
   // nLeptonOverlap                  =           ;
