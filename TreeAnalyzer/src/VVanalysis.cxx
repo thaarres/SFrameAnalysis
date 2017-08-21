@@ -269,7 +269,7 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
       float dR = myjet.DeltaR(mypuppijet);
       if ( dR > dRmin ) continue;
       bool samePuppiJet =0;
-      for(int m=0;m<puppiMatch.size();m++)
+      for(int m=0;m<abs(puppiMatch.size());m++)
       {
         if(ii == puppiMatch.at(m)) samePuppiJet=1;
       }
