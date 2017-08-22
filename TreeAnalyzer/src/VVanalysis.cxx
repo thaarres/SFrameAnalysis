@@ -96,7 +96,7 @@ void VVanalysis::BeginInputFile( const SInputData& ) throw( SError ) { //For eac
   m_logger << INFO << "Connecting input variables" << SLogger::endmsg;
   if (m_isData) {
     
-    m_jetAK8Puppi .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::JetBasic|Ntuple::JetSubstructure, (m_jetAK8PuppiName + "_").c_str() );
+    m_jetAK8Puppi .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::JetBasic|Ntuple::JetAnalysis|Ntuple::JetSubstructure|Ntuple::JetSoftdropSubjets, (m_jetAK8PuppiName + "_").c_str() );
     m_jetAK8      .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::JetBasic|Ntuple::JetAnalysis|Ntuple::JetSubstructure|Ntuple::JetSoftdropSubjets, (m_jetAK8Name + "_").c_str() );
     m_eventInfo   .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::EventInfoBasic|Ntuple::EventInfoTrigger|Ntuple::EventInfoMETFilters, "" );
     m_electron    .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::ElectronBasic|Ntuple::ElectronID, (m_electronName + "_").c_str() );
@@ -166,7 +166,7 @@ void VVanalysis::BeginInputData( const SInputData& id ) throw( SError ) { //call
   DeclareVariable( m_o_pt_jet2                    , "jj_l2_pt");
   DeclareVariable( m_o_genpt_jet2                 , "jj_l2_gen_pt");
   DeclareVariable( Flag_goodVertices              , "Flag_goodVertices");
-  DeclareVariable( Flag_globalTightHalo2016Filter , "Flag_globalTightHalo2016Filter");
+  DeclareVariable( Flag_globalTightHalo2016Filter , "Flag_CSCTightHaloFilter");
   DeclareVariable( Flag_HBHENoiseFilter           , "Flag_HBHENoiseFilter");
   DeclareVariable( Flag_HBHENoiseIsoFilter        , "Flag_HBHENoiseIsoFilter");
   DeclareVariable( Flag_eeBadScFilter             , "Flag_eeBadScFilter");
@@ -252,7 +252,7 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
     b_weight= getEventWeight();
   }
   // for inclusive signal samples only take generated hadronic events
-  if( m_isSignal && !SignalIsHad( m_genParticle, m_Channel)) throw SError( SError::SkipEvent);
+  //if( m_isSignal && !SignalIsHad( m_genParticle, m_Channel)) throw SError( SError::SkipEvent);
   ++m_allEvents;
   ( *m_test )[ 0 ]++;
    
@@ -269,6 +269,8 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   for ( int i = 0; i < (m_jetAK8.N); ++i ) {
    
     UZH::Jet myjet( &m_jetAK8, i );
+    
+    //std::cout << myjet.IDTight() << std::endl;
     if ( i == 0 && !myjet.IDTight()) break;
     if (! (myjet.pt() > 200       )) continue;
     if (! (fabs(myjet.eta()) < 2.5)) continue;
