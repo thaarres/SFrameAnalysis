@@ -142,6 +142,7 @@ void VVanalysis::BeginInputData( const SInputData& id ) throw( SError ) { //call
   if (!m_isData) m_pileupReweightingTool.BeginInputData( id );
   
   // Declare output variables:
+  DeclareVariable( b_lumi                         , "lumi"  );
   DeclareVariable( b_event                        , "event"  );
   DeclareVariable( b_run                          , "run"  );
   DeclareVariable( b_weight                       , "weight"  );
@@ -179,7 +180,6 @@ void VVanalysis::BeginInputData( const SInputData& id ) throw( SError ) { //call
   DeclareVariable( HLTHT650_MJJ900DEtaJJ1p5       , "HLTHT650_MJJ900DEtaJJ1p5");
   DeclareVariable( HLTHT800                       , "HLTHT800");
   DeclareVariable( HLT_JJ                         , "HLT_JJ");
-  DeclareVariable( nLeptonOverlap                 , "nLeptonOverlap");
   DeclareVariable( m_o_jj_nOtherLeptons           , "jj_nOtherLeptons");
   DeclareVariable( jj_mergedVTruth_jet1           , "jj_mergedVTruth_jet1");
   DeclareVariable( jj_mergedVTruth_jet2           , "jj_mergedVTruth_jet2");
@@ -284,7 +284,8 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
       float dR = myjet.DeltaR(mypuppijet);
       if ( dR > dRmin ) continue;
       bool samePuppiJet =0;
-      for(unsigned int m=0;m<puppiMatch.size();m++)
+
+      for(int m=0;m<abs(puppiMatch.size());m++)
       {
         if(ii == puppiMatch.at(m)) samePuppiJet=1;
       }
@@ -349,15 +350,13 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   // dEta cut
   if( fabs( (goodFatJets_sorted[0].tlv()).Eta() - (goodFatJets_sorted[1].tlv()).Eta() )  > 1.3 ) throw SError( SError::SkipEvent );
   
-  //if( fabs( goodFatJets[0].eta() - goodFatJets[1].eta() )  > 1.3 ) throw SError( SError::SkipEvent );
-  //std::cout << "dEta " << fabs( goodFatJets[0].eta() - goodFatJets[1].eta() ) << std::endl;
   ++m_passedDEta;
   ( *m_test )[ 3 ]++;
   //debugEvent.push_back(m_eventInfo.eventNumber);
 
   // Loose Mjj cut to slim down samples
   TLorentzVector dijet = goodFatJets_sorted[0].tlv() + goodFatJets_sorted[1].tlv();
-  if( dijet.M() < 900. ) throw SError( SError::SkipEvent );
+  if( dijet.M() < 1000. ) throw SError( SError::SkipEvent );
   ++m_passedMjj;
   ( *m_test )[ 4 ]++;
   //debugEvent.push_back(m_eventInfo.eventNumber);
@@ -392,6 +391,7 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
     if (HLTJet360_TrimMass30 or HLTHT700_TrimMass50 or HLTHT650_MJJ950DEtaJJ1p5 or HLTHT650_MJJ900DEtaJJ1p5 or HLTHT800) isfired = true;
   }
   
+  b_lumi                          = m_eventInfo.lumiBlock;
   b_event                         = m_eventInfo.eventNumber;
   b_run                           = m_eventInfo.runNumber;
   Flag_goodVertices               = m_eventInfo.PV_filter;
@@ -413,7 +413,6 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
     m_o_genpt_jet2                  = goodGenJets[1].tlv().Pt();
   }
   
-  // nLeptonOverlap                  =           ;
   jj_mergedVTruth_jet1                =  isMergedVJet(goodFatJets_sorted[0].tlv(),GenQuarks) ;
   jj_mergedVTruth_jet2                =  isMergedVJet(goodFatJets_sorted[1].tlv(),GenQuarks) ;
   //
