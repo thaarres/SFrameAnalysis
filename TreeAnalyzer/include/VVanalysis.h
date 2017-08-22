@@ -128,7 +128,15 @@ private:
   float     m_o_tau2_jet1                 ; 
   float     m_o_tau2_jet2                 ; 
   float     m_o_tau21_jet1                ; 
-  float     m_o_tau21_jet2                ; 
+  float     m_o_tau21_jet2                ;
+  float     m_o_genpt_jet1                ;
+  float     m_o_genpt_jet2                ;
+  float     m_o_pt_jet1                   ;
+  float     m_o_pt_jet2                   ;
+  int       m_o_njj                       ;
+  int       m_o_jj_nOtherLeptons          ;
+  
+  
   int       Flag_goodVertices             ; 
   int       Flag_globalTightHalo2016Filter; 
   int       Flag_HBHENoiseFilter          ; 
@@ -141,7 +149,8 @@ private:
   float     HLTHT700_TrimMass50           ; 
   float     HLTHT650_MJJ950DEtaJJ1p5      ; 
   float     HLTHT650_MJJ900DEtaJJ1p5      ; 
-  float     HLTHT800                      ;                                        
+  float     HLTHT800                      ;
+  bool      HLT_JJ                        ;
   int       nLeptonOverlap                ; 
   int       jj_mergedVTruth_jet1          ; 
   int       jj_mergedVTruth_jet2          ; 
