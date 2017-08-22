@@ -53,11 +53,11 @@ bool FoundNoLeptonOverlap(std::vector<UZH::Electron> goodEle, std::vector<UZH::M
  
   for( unsigned int e =0;e< goodEle.size(); e++)
   {
-    if(Jet.DeltaR(goodEle.at(e).tlv()) < 0.8) return 0;  
+    if(Jet.DeltaR(goodEle.at(e).tlv()) < 1.0) return 0;  
   }
   for( unsigned int m =0;m< goodMu.size(); m++)
   {
-    if(Jet.DeltaR(goodMu.at(m).tlv()) < 0.8) return 0;   
+    if(Jet.DeltaR(goodMu.at(m).tlv()) < 1.0) return 0;   
   }
   return 1;   
 }
