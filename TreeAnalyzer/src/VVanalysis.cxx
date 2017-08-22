@@ -349,7 +349,7 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
 
   // Loose Mjj cut to slim down samples
   TLorentzVector dijet = goodFatJets_sorted[0].tlv() + goodFatJets_sorted[1].tlv();
-  if( dijet.M() < 900. ) throw SError( SError::SkipEvent );
+  if( dijet.M() < 1000. ) throw SError( SError::SkipEvent );
   ++m_passedMjj;
   ( *m_test )[ 4 ]++;
   //debugEvent.push_back(m_eventInfo.eventNumber);
