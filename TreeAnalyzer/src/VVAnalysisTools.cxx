@@ -131,7 +131,6 @@ std::vector<UZH::Jet> SortAfterPuppiSDMass(std::vector <UZH::Jet> jets){
       sorted.push_back(jets.at(map[mass.at(mass.size()-i-1)]));
     }
     return sorted;
-   //return jets;
 }
 
 

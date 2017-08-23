@@ -261,7 +261,6 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
    if( m_jetAK8.N < 2 ) throw SError( SError::SkipEvent );
   //-------------Select two fat jets-------------//
   std::vector<UZH::Jet> goodFatJets;
-  std::vector<UZH::Jet> matchedPuppiJets;
   std::vector<UZH::Jet> goodGenJets;
   std::vector<UZH::GenParticle> GenQuarks  = FindGeneratedQuarks(m_genParticle, m_isData);
   std::vector<UZH::Electron> goodElectrons = FindGoodLeptons(m_electron);
@@ -271,8 +270,6 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   for ( int i = 0; i < (m_jetAK8.N); ++i ) {
    
     UZH::Jet myjet( &m_jetAK8, i );
-    
-    //std::cout << myjet.IDTight() << std::endl;
     if ( i == 0 && !myjet.IDTight()) break;
     if (! (myjet.pt() > 200       )) continue;
     if (! (fabs(myjet.eta()) < 2.5)) continue;
@@ -298,7 +295,6 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
       myjet.puppi_tau1        = mypuppijet.tau1();
       myjet.puppi_tau2        = mypuppijet.tau2();
        
-      matchedPuppiJets.push_back(mypuppijet);     
     }
     
     //Match to gen jet
