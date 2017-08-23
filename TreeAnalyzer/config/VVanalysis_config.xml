@@ -27,8 +27,9 @@
                        <In FileName="/storage/b/psi_data/Summer16/QstarToQW_M-1800_TuneCUETP8M2T4_13TeV-pythia8/QstarToQW_M-1800_TuneCUETP8M2T4_13TeV-pythia820170203_signal/170203_131424/0000/flatTuple_11.root" Lumi="1.0" />-->
 			<!--<In FileName="flatTuple_2.root" Lumi="1.0" />
 			<In FileName="flatTuple_3.root" Lumi="1.0" />-->
+
 			<InputTree Name="ntuplizer/tree" />
-			<OutputTree Name="outtree" />
+			<OutputTree Name="tree" />
 		</InputData>
 		<UserConfig>
                         <Item Name="IsSignal" Value="true"/>

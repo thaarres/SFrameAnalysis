@@ -14,7 +14,8 @@ LumiWeight::~LumiWeight( void ){
 
 //==============================================================================================
 double LumiWeight::getLumiWeight( TString sample ){
-  
+
+
   if( sample.Contains( "WJetsToQQ_HT"          ) ) return 95.14;
   if( sample.Contains( "ZJetsToQQ_HT600toInf"  ) ) return 41.34;
   if( sample.Contains( "QCD_Pt_170to300_"      ) ) return 117276.;
@@ -42,5 +43,21 @@ double LumiWeight::getLumiWeight( TString sample ){
   std::cout << "Cross section not defined for this sample!!" << std::endl;
   return 0;
   
-       
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

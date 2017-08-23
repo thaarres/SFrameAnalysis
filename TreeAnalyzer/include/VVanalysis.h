@@ -156,6 +156,7 @@ private:
   int       jj_mergedVTruth_jet2          ; 
   double    b_xSec                        ;
   double    b_event                       ;
+  double    b_lumi                        ;
   double    b_run                         ;
   double    b_lumi                        ;
   float     b_weight                      ;
