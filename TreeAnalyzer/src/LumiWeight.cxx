@@ -43,7 +43,7 @@ double LumiWeight::getLumiWeight( TString sample ){
   std::cout << "Cross section not defined for this sample!!" << std::endl;
   return 0;
   
-
+}
 
 
 
