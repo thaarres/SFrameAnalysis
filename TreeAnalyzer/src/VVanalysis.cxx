@@ -260,6 +260,7 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
    if( m_jetAK8.N < 2 ) throw SError( SError::SkipEvent );
   //-------------Select two fat jets-------------//
   std::vector<UZH::Jet> goodFatJets;
+  std::vector<UZH::Jet> matchedPuppiJets;
   std::vector<UZH::Jet> goodGenJets;
   std::vector<UZH::GenParticle> GenQuarks  = FindGeneratedQuarks(m_genParticle, m_isData);
   std::vector<UZH::Electron> goodElectrons = FindGoodLeptons(m_electron);
@@ -296,7 +297,7 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
       myjet.puppi_tau1        = mypuppijet.tau1();
       myjet.puppi_tau2        = mypuppijet.tau2();
        
-           
+      matchedPuppiJets.push_back(mypuppijet);     
     }
     
     //Match to gen jet
@@ -318,7 +319,6 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
     goodFatJets.push_back(myjet);
   }
   
-
 
 
 
@@ -345,7 +345,14 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   ++m_passedPuppi;
   ( *m_test )[ 2 ]++;
   
-  std::vector<UZH::Jet> goodFatJets_sorted = SortAfterPuppiSDMass(goodFatJets);
+   std::vector<UZH::Jet> goodFatJets_sorted = goodFatJets;//SortAfterPuppiSDMass(goodFatJets);
+  
+  
+  if(m_eventInfo.runNumber==1 &&  m_eventInfo.lumiBlock== 94 && m_eventInfo.eventNumber==15882 )
+  {
+  PrintEvent(goodFatJets );
+  PrintEvent(matchedPuppiJets );
+  }
   
   // dEta cut
   if( fabs( (goodFatJets_sorted[0].tlv()).Eta() - (goodFatJets_sorted[1].tlv()).Eta() )  > 1.3 ) throw SError( SError::SkipEvent );

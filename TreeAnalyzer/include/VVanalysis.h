@@ -157,6 +157,7 @@ private:
   double    b_xSec                        ;
   double    b_event                       ;
   double    b_run                         ;
+  double    b_lumi                        ;
   float     b_weight                      ;
   float     b_weightGen                   ;
   float     b_weightPU                    ;
