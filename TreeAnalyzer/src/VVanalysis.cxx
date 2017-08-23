@@ -50,7 +50,7 @@ VVanalysis::VVanalysis()
    DeclareProperty( "PUPPIJEC"        ,         m_PUPPIJEC                = "weights/puppiCorr.root" );
    // DeclareProperty( "JSONName"        ,         m_jsonName                = std::string (std::getenv("SFRAME_DIR")) + "/../GoodRunsLists/JSON/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_Silver_v2.txt" );
    DeclareProperty( "IsData"          ,         m_isData                  = false );
-   DeclareProperty( "IsSignal"        ,         m_isSignal                = true );
+   DeclareProperty( "IsSignal"        ,         m_isSignal                = false );
    DeclareProperty( "Channel"         ,         m_Channel                 = "qV" );
    
    nSumGenWeights           = 0;
@@ -343,17 +343,17 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   if( fabs( (goodFatJets_sorted[0].tlv()).Eta() - (goodFatJets_sorted[1].tlv()).Eta() )  > 1.3 ) throw SError( SError::SkipEvent );
   
   
-  // // FOR SYNCH
-//   if (m_eventInfo.lumiBlock  == 94 && m_eventInfo.eventNumber== 15904 && m_eventInfo.runNumber  == 1) {
-//     std::cout<< "jj mass =" << (goodFatJets_sorted[0].tlv() + goodFatJets_sorted[1].tlv()).M() << std::endl;
-//     std::cout<< "jj deta = " << fabs( (goodFatJets_sorted[0].tlv()).Eta() - (goodFatJets_sorted[1].tlv()).Eta() ) << std::endl;
-//     for( int i=0; i < goodFatJets.size(); ++i){
-//          std::cout<< i << " goodFatJets_sorted mass = " << goodFatJets_sorted[i].puppi_softdropmass << std::endl;
-//          std::cout<< i << " goodFatJets_sorted pt   = " << goodFatJets_sorted[i].tlv().Pt()  << std::endl;
-//           std::cout<< i << " goodFatJets_sorted tau21   = " << goodFatJets_sorted[i].puppi_tau2/goodFatJets_sorted[i].puppi_tau1  << std::endl;
-//          std::cout<<""<<std::endl;
-//     }
-//   }
+  // FOR SYNCH
+  if (m_eventInfo.lumiBlock  == 94 && m_eventInfo.eventNumber== 15904 && m_eventInfo.runNumber  == 1) {
+    std::cout<< "jj mass =" << (goodFatJets_sorted[0].tlv() + goodFatJets_sorted[1].tlv()).M() << std::endl;
+    std::cout<< "jj deta = " << fabs( (goodFatJets_sorted[0].tlv()).Eta() - (goodFatJets_sorted[1].tlv()).Eta() ) << std::endl;
+    for( int i=0; i < goodFatJets.size(); ++i){
+         std::cout<< i << " goodFatJets_sorted mass = " << goodFatJets_sorted[i].puppi_softdropmass << std::endl;
+         std::cout<< i << " goodFatJets_sorted pt   = " << goodFatJets_sorted[i].tlv().Pt()  << std::endl;
+          std::cout<< i << " goodFatJets_sorted tau21   = " << goodFatJets_sorted[i].puppi_tau2/goodFatJets_sorted[i].puppi_tau1  << std::endl;
+         std::cout<<""<<std::endl;
+    }
+  }
 
   
   ++m_passedDEta;
@@ -363,6 +363,8 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   // Loose Mjj cut to slim down samples
   TLorentzVector dijet = goodFatJets_sorted[0].tlv() + goodFatJets_sorted[1].tlv();
   if( dijet.M() < 1000. ) throw SError( SError::SkipEvent );
+  
+  if (m_eventInfo.lumiBlock  == 94 && m_eventInfo.eventNumber== 15904 && m_eventInfo.runNumber  == 1) std::cout<< "jPass MJJ =" << (goodFatJets_sorted[0].tlv() + goodFatJets_sorted[1].tlv()).M() << std::endl;
   
   ++m_passedMjj;
   ( *m_test )[ 4 ]++;
@@ -424,7 +426,8 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   
   jj_mergedVTruth_jet1                =  isMergedVJet(goodFatJets_sorted[0].tlv(),GenQuarks) ;
   jj_mergedVTruth_jet2                =  isMergedVJet(goodFatJets_sorted[1].tlv(),GenQuarks) ;
- 
+  //
+
    
   
   // }
@@ -433,7 +436,9 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   // FillValidationHists( ELECTRON, StatusString );
   // FillValidationHists( MUON, StatusString );
   // FillValidationHists( JETS, StatusString );
-
+ 
+  goodFatJets.clear();
+  goodFatJets_sorted.clear();
   return;
 
 }
