@@ -245,7 +245,8 @@ void VVanalysis::EndMasterInputData( const SInputData& ) throw( SError ){ //this
 
 void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError ) { //This is the main analysis function that is called for each event. It receives the weight of the event, as it is calculated by the framework from the luminosities and generator cuts defined in the XML configuration.
   
-  float gW = (m_eventInfo.genEventWeight < 0) ? -1 : 1; 
+  // float gW = (m_eventInfo.genEventWeight < 0) ? -1 : 1;
+  float gW = m_eventInfo.genEventWeight;  //needed for Herwig
   nSumGenWeights += gW;
   Hist( "genEvents" )->Fill(gW);
   
@@ -383,12 +384,12 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   
   //Match to gen jet
   if(!m_isData){
-    for( unsigned int i=0; i < goodFatJets.size(); ++i){
+    for( unsigned int i=0; i < goodFatJets_sorted.size(); ++i){
       float dRmin = 99.;
       int jetIdx = 99;
       for ( int j = 0; j < (m_genjetAK8.N); ++j ) {
         UZH::Jet genJet( &m_genjetAK8, j );
-        if ( genJet.pt() < 1. ) continue;
+        if ( genJet.pt() < 50. ) continue;
         float dR = (genJet.tlv()).DeltaR((goodFatJets_sorted.at(i)).tlv());
         if ( dR > dRmin ) continue;
         dRmin = dR;
@@ -540,7 +541,8 @@ double VVanalysis::getEventWeight() {
       break;
     }
   }
-  b_weightGen = (m_eventInfo.genEventWeight < 0) ? -1 : 1; 
+  // b_weightGen = (m_eventInfo.genEventWeight < 0) ? -1 : 1;
+  b_weightGen = m_eventInfo.genEventWeight; //needed for Herwig
   weight *= b_weightPU*b_weightGen;
   
   return weight;

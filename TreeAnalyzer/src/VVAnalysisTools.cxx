@@ -67,8 +67,6 @@ std::vector<UZH::Electron> FindGoodLeptons(Ntuple::ElectronNtupleObject m_electr
     for(int i=0;i< m_electrons.N;i++)
     {
         UZH::Electron ele(&m_electrons,i);
-        if( ele.pt() <= 35.) continue;
-        if( fabs( ele.superCluster_eta() ) >= 1.4442 && fabs( ele.superCluster_eta() ) <= 1.566 ) continue;
         if( fabs( ele.superCluster_eta() ) >= 2.5 ) continue;
         if( ! ele.isHeepElectron()  ) continue;
         goodEle.push_back(ele);
@@ -83,7 +81,7 @@ std::vector<UZH::Muon> FindGoodLeptons(Ntuple::MuonNtupleObject m_muons){
         UZH::Muon mu(&m_muons,i);
         if( mu.pt() <= 30.) continue;
         if( fabs( mu.eta() ) >= 2.4 ) continue;
-        if( ! mu.isTightMuon()  ) continue;
+        if( ! mu.isTightMuon()  ) continue; // //isHighPtMuon
         if( mu.trackIso()/mu.pt() >= 0.1 ) continue;
         goodMu.push_back(mu);
     }
