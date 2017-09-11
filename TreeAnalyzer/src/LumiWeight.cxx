@@ -38,6 +38,7 @@ double LumiWeight::getLumiWeight( TString sample ){
   if( sample.Contains( "QCD_HT2000toInf"       ) ) return 25.25;
   if( sample.Contains( "QCD_Pt-15to7000" ) or sample.Contains( "QCD_Pt_15to7000" )) return  2.022100000e+09*60.5387252324;
   if( sample.Contains("BulkGrav") or sample.Contains("Qstar") or sample.Contains("Wprime") or sample.Contains("Zprime")) return 1.0;
+   if( sample.Contains( "TT_TuneCUETP8M2T4"   ) ) return  831.76;
   
   
   std::cout << "Cross section not defined for this sample!!" << std::endl;

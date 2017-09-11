@@ -28,10 +28,10 @@ VVanalysis::VVanalysis()
    , m_bTaggingScaleTool    ( this )
    , m_xSec                 ()
    , m_allEvents( "allEvents", this )
-   , m_passedLoose( "passedLoose", this )
+   , m_foundLepton( "passedLoose", this )
    , m_passedPuppi( "passedPuppi", this )
-   , m_passedDEta( "passedDeta", this )
-   , m_passedMjj( "passedMjj", this )
+   , m_passedAK4( "passedDeta", this )
+   , m_passedMET( "passedMjj", this )
    , m_passedEvents( "passedEvents", this )
    , m_test( "test", this ) 
    , m_genjetAK8( this )
@@ -40,18 +40,18 @@ VVanalysis::VVanalysis()
    SetLogName( GetName() );
    
    DeclareProperty( "JetAK8Name"      ,         m_jetAK8Name              = "jetAK8"        );
+   DeclareProperty( "JetAK4Name"      ,         m_jetAK4Name              = "jetAK4"        );
    DeclareProperty( "GenJetAK8Name"   ,         m_genjetAK8Name           = "genJetAK8"     );
    DeclareProperty( "JetAK8PuppiName" ,         m_jetAK8PuppiName         = "jetAK8_puppi"  );
    DeclareProperty( "GenParticleName" ,         m_genParticleName         = "genParticle"   );
    DeclareProperty( "ElectronName"    ,         m_electronName            = "el"            );
    DeclareProperty( "MuonName"        ,         m_muonName                = "mu"            );
-   
+   DeclareProperty( "MissingEtName",            m_missingEtName            = "MET" );
    DeclareProperty( "RecoTreeName"    ,         m_recoTreeName            = "tree" );
    DeclareProperty( "PUPPIJEC"        ,         m_PUPPIJEC                = "weights/puppiCorr.root" );
    // DeclareProperty( "JSONName"        ,         m_jsonName                = std::string (std::getenv("SFRAME_DIR")) + "/../GoodRunsLists/JSON/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_Silver_v2.txt" );
    DeclareProperty( "IsData"          ,         m_isData                  = false );
-   DeclareProperty( "IsSignal"        ,         m_isSignal                = false );
-   DeclareProperty( "Channel"         ,         m_Channel                 = "qV" );
+   DeclareProperty( "Channel"         ,         m_Channel                 = "el" );
    
    
    nSumGenWeights           = 0;
@@ -99,18 +99,22 @@ void VVanalysis::BeginInputFile( const SInputData& ) throw( SError ) { //For eac
     
     m_jetAK8Puppi .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::JetBasic|Ntuple::JetSubstructure, (m_jetAK8PuppiName + "_").c_str() );
     m_jetAK8      .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::JetBasic|Ntuple::JetAnalysis|Ntuple::JetSubstructure|Ntuple::JetSoftdropSubjets, (m_jetAK8Name + "_").c_str() );
+    m_jetAK4      .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::JetBasic|Ntuple::JetAnalysis|Ntuple::JetTruth, (m_jetAK4Name + "_").c_str() );
     m_eventInfo   .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::EventInfoBasic|Ntuple::EventInfoTrigger|Ntuple::EventInfoMETFilters, "" );
     m_electron    .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::ElectronBasic|Ntuple::ElectronID, (m_electronName + "_").c_str() );
     m_muon        .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::MuonBasic|Ntuple::MuonID|Ntuple::MuonIsolation, (m_muonName + "_").c_str() );
+    m_missingEt   .ConnectVariables(    m_recoTreeName.c_str(), Ntuple::MissingEtBasic, (m_missingEtName + "_").c_str() );
   }
   else {
     m_jetAK8Puppi .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::JetBasic|Ntuple::JetSubstructure, (m_jetAK8PuppiName + "_").c_str() );
     m_jetAK8      .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::JetBasic|Ntuple::JetAnalysis|Ntuple::JetSubstructure|Ntuple::JetTruth|Ntuple::JetSoftdropSubjets|Ntuple::JetSoftdropSubjetsTruth, (m_jetAK8Name + "_").c_str() );
+    m_jetAK4      .ConnectVariables(       m_recoTreeName.c_str(), Ntuple::JetBasic|Ntuple::JetAnalysis|Ntuple::JetTruth, (m_jetAK4Name + "_").c_str() );
     m_eventInfo   .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::EventInfoBasic|Ntuple::EventInfoTrigger|Ntuple::EventInfoMETFilters|Ntuple::EventInfoTruth, "" );
     m_genParticle .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::GenParticleBasic, (m_genParticleName + "_").c_str() );
     m_genjetAK8   .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::GenJet, (m_genjetAK8Name + "_").c_str() );
     m_electron    .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::ElectronBasic|Ntuple::ElectronID|Ntuple::ElectronSuperCluster, (m_electronName + "_").c_str() );
     m_muon        .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::MuonBasic|Ntuple::MuonID|Ntuple::MuonIsolation, (m_muonName + "_").c_str() );
+    m_missingEt   .ConnectVariables(    m_recoTreeName.c_str(), Ntuple::MissingEtBasic, (m_missingEtName + "_").c_str() );
   }
   // Unused collections
   // m_jetAK4.ConnectVariables(       m_recoTreeName.c_str(), Ntuple::JetBasic|Ntuple::JetAnalysis|Ntuple::JetTruth, (m_jetAK4Name + "_").c_str() );
@@ -143,32 +147,27 @@ void VVanalysis::BeginInputData( const SInputData& id ) throw( SError ) { //call
   if (!m_isData) m_pileupReweightingTool.BeginInputData( id );
   
   // Declare output variables:
-  DeclareVariable( b_lumi                         , "lumi"  );
-  DeclareVariable( b_event                        , "evt"  );
-  DeclareVariable( b_run                          , "run"  );
-  DeclareVariable( b_weight                       , "weight"  );
-  DeclareVariable( b_weightGen                    , "genWeight");
-  DeclareVariable( b_weightPU                     , "puWeight");
-  DeclareVariable( b_xSec                         , "xsec");
-  DeclareVariable( m_o_njj                        , "njj");
-  DeclareVariable( m_o_mjj                        , "jj_LV_mass");
-  DeclareVariable( m_o_genmjj                     , "jj_gen_partialMass");
-  DeclareVariable( m_o_mpuppisoftdrop_jet1        , "jj_l1_softDrop_mass");
-  DeclareVariable( m_o_mpuppisoftdrop_jet2        , "jj_l2_softDrop_mass");
-  DeclareVariable( m_o_mgensoftdrop_jet1          , "jj_l1_gen_softDrop_mass");
-  DeclareVariable( m_o_mgensoftdrop_jet2          , "jj_l2_gen_softDrop_mass");
-  DeclareVariable( m_o_tau1_jet1                  , "jj_l1_tau1");  
-  DeclareVariable( m_o_tau1_jet2                  , "jj_l2_tau1");
-  DeclareVariable( m_o_tau2_jet1                  , "jj_l1_tau2");  
-  DeclareVariable( m_o_tau2_jet2                  , "jj_l2_tau2");
-  DeclareVariable( m_o_tau21_jet1                 , "jj_l1_tau21"); 
-  DeclareVariable( m_o_tau21_jet2                 , "jj_l2_tau21");
-  DeclareVariable( m_o_pt_jet1                    , "jj_l1_pt");
-  DeclareVariable( m_o_eta_jet1                   , "jj_l1_eta");
-  DeclareVariable( m_o_genpt_jet1                 , "jj_l1_gen_pt");
-  DeclareVariable( m_o_pt_jet2                    , "jj_l2_pt");
-  DeclareVariable( m_o_eta_jet2                   , "jj_l2_eta");
-  DeclareVariable( m_o_genpt_jet2                 , "jj_l2_gen_pt");
+  DeclareVariable( b_lumi                   , "lumi"  );
+  DeclareVariable( b_event                  , "evt"  );
+  DeclareVariable( b_run                    , "run"  );
+  DeclareVariable( b_weight                 , "weight"  );
+  DeclareVariable( b_weightGen              , "genWeight");
+  DeclareVariable( b_weightPU               , "puWeight");
+  DeclareVariable( b_xSec                   , "xsec");
+  DeclareVariable( m_o_nJ                   , "njj");
+  DeclareVariable( m_o_mpuppisoftdrop       , "jet_softDrop_mass");
+  DeclareVariable( m_o_mgensoftdrop         , "jet_gen_softDrop_mass");
+  DeclareVariable( m_o_tau1                 , "jet_tau1");  
+  DeclareVariable( m_o_tau2                 , "jet_tau2");  
+  DeclareVariable( m_o_tau21                , "jet_tau21"); 
+  DeclareVariable( m_o_pt                   , "jet_pt");
+  DeclareVariable( m_o_eta                  , "jet_eta");
+  DeclareVariable( m_o_genpt                , "jet_gen_pt");
+  DeclareVariable( m_o_lep_pt              ,  "lep_pt");
+  DeclareVariable( m_o_Wlep_pt              ,  "Wlep_pt");
+  DeclareVariable( m_o_lep_eta             ,  "lep_eta");
+  DeclareVariable( m_o_lep_phi             ,  "lep_phi");
+  
   DeclareVariable( Flag_goodVertices              , "Flag_goodVertices");
   DeclareVariable( Flag_globalTightHalo2016Filter , "Flag_CSCTightHaloFilter");
   DeclareVariable( Flag_HBHENoiseFilter           , "Flag_HBHENoiseFilter");
@@ -177,18 +176,16 @@ void VVanalysis::BeginInputData( const SInputData& id ) throw( SError ) { //call
   DeclareVariable( Flag_badChargedHadronFilter    , "Flag_badChargedHadronFilter");
   DeclareVariable( Flag_badMuonFilter             , "Flag_badMuonFilter");
   DeclareVariable( Flag_ECALDeadCell              , "Flag_ECALDeadCell");
-  DeclareVariable( HLTJet360_TrimMass30           , "HLTJet360_TrimMass30");
-  DeclareVariable( HLTHT700_TrimMass50            , "HLTHT700_TrimMass50");
-  DeclareVariable( HLTHT650_MJJ950DEtaJJ1p5       , "HLTHT650_MJJ950DEtaJJ1p5");
-  DeclareVariable( HLTHT650_MJJ900DEtaJJ1p5       , "HLTHT650_MJJ900DEtaJJ1p5");
-  DeclareVariable( HLTHT800                       , "HLTHT800");
-  DeclareVariable( HLT_JJ                         , "HLT_JJ");
-  DeclareVariable( m_o_jj_nOtherLeptons           , "jj_nOtherLeptons");
-  DeclareVariable( jj_mergedVTruth_jet1           , "jj_mergedVTruth_jet1");
-  DeclareVariable( jj_mergedVTruth_jet2           , "jj_mergedVTruth_jet2");
+  DeclareVariable( HLTMu50           , "HLTMu50");
+  DeclareVariable( HLTMu45_eta2p1            , "HLTMu45_eta2p1");
+  DeclareVariable( HLTEle105_CaloIdVT_GsfTrkIdT       , "HLTEle105_CaloIdVT_GsfTrkIdT");
+  DeclareVariable( HLTEle115_CaloIdVT_GsfTrkIdT       , "HLTEle115_CaloIdVT_GsfTrkIdT");
+  DeclareVariable( HLT_all                         , "HLT_all");
+  DeclareVariable( m_o_nLeptons           , "nOtherLeptons");
+  DeclareVariable( mergedVTruth                , "mergedVTruth");
 
   // // Declare the output histograms:
-  // Book( TH1F( "Mjj_hist"     , "Mjj", 100, 0.0, 3000. ) );
+  // Book( TH1F( "Mhist"     , "Mjj", 100, 0.0, 3000. ) );
   
  
   m_test->resize( 6, 0 ); // Reserve six entries in vector for counting entries:
@@ -228,10 +225,10 @@ void VVanalysis::BeginMasterInputData( const SInputData& ) throw( SError ){
 void VVanalysis::EndMasterInputData( const SInputData& ) throw( SError ){ //this is a good place to print some summaries, do some final calculations on the created histograms (for instance fitting them), etc
     
   m_logger << INFO << "Number of all processed events      :  "<< *m_allEvents   << "   " << ( m_test->size() > 0 ? ( *m_test )[ 0 ] : 0 )<< SLogger::endmsg;
-  m_logger << INFO << "Number of events passing pt, eta    :  "<< *m_passedLoose << "   " << ( m_test->size() > 1 ? ( *m_test )[ 1 ] : 0 )<< SLogger::endmsg;
-  m_logger << INFO << "Found two PUPPI jets matched to AK8 :  "<< *m_passedPuppi << "   " << ( m_test->size() > 2 ? ( *m_test )[ 2 ] : 0 )<< SLogger::endmsg;
-  m_logger << INFO << "Number of events passing dETa       :  "<< *m_passedDEta  << "   " << ( m_test->size() > 4 ? ( *m_test )[ 4 ] : 0 )<< SLogger::endmsg;
-  m_logger << INFO << "Number of events passing Mjj        :  "<< *m_passedMjj   << "   " << ( m_test->size() > 3 ? ( *m_test )[ 3 ] : 0 )<< SLogger::endmsg;
+  m_logger << INFO << "Number of events passing lepton req.:  "<< *m_foundLepton << "   " << ( m_test->size() > 1 ? ( *m_test )[ 1 ] : 0 )<< SLogger::endmsg;
+  m_logger << INFO << "Found AK8 PUPPI jet                 :  "<< *m_passedPuppi << "   " << ( m_test->size() > 2 ? ( *m_test )[ 2 ] : 0 )<< SLogger::endmsg;
+  m_logger << INFO << "Found at least one b-tagged AK4     :  "<< *m_passedAK4  << "   " << ( m_test->size() > 4 ? ( *m_test )[ 4 ] : 0 )<< SLogger::endmsg;
+  m_logger << INFO << "Number of events passing MET cut    :  "<< *m_passedMET   << "   " << ( m_test->size() > 3 ? ( *m_test )[ 3 ] : 0 )<< SLogger::endmsg;
   m_logger << INFO << "Number of events passing selection  :  "<< *m_passedEvents<< "   " << ( m_test->size() > 5 ? ( *m_test )[ 5 ] : 0 )<< SLogger::endmsg;
   
   m_logger << INFO << "Number of generated Events (weighted) : "<< nSumGenWeights << SLogger::endmsg;
@@ -255,215 +252,145 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   if (!m_isData) {
     b_weight= getEventWeight();
   }
-  // for inclusive signal samples only take generated hadronic events
+  // Only take generated hadronic events
   // if( m_isSignal && !SignalIsHad( m_genParticle, m_Channel)) throw SError( SError::SkipEvent);
 
   ++m_allEvents;
   ( *m_test )[ 0 ]++;
-      
-   if( m_jetAK8.N < 2 ) throw SError( SError::SkipEvent );
-  //-------------Select two fat jets-------------//
-  std::vector<UZH::Jet> goodFatJets;
-  std::vector<UZH::Jet> goodGenJets;
-  std::vector<UZH::GenParticle> GenQuarks  = FindGeneratedQuarks(m_genParticle, m_isData);
+  if( m_jetAK8.N < 1 ) throw SError( SError::SkipEvent );
+  //-------------Find lepton-------------//
+  // electrons: HEEP - pt>120 GeV - |η| <1.442 or 1.56<|η| <2.5
+  // muons: HighPt ID - pt>53 GeV - |η| <2.1 - relIso03<0.1
   std::vector<UZH::Electron> goodElectrons = FindGoodLeptons(m_electron);
   std::vector<UZH::Muon>     goodMuons     = FindGoodLeptons(m_muon);
   
-  
- // if (m_eventInfo.lumiBlock  == 43 && m_eventInfo.eventNumber== 7276 && m_eventInfo.runNumber  == 1) {
- //      std::cout<< "goodElectrons size =" <<  goodElectrons.size() << std::endl;
- //      for( unsigned int i=0; i < goodElectrons.size(); ++i){
- //           std::cout<< i << " goodElectrons eta  = " << goodElectrons[i].tlv().Eta() << std::endl;
- //           std::cout<< i << " goodElectrons pt   = " << goodElectrons[i].tlv().Pt()  << std::endl;
- //            std::cout<< i << " goodElectrons ID   = " << goodElectrons[i].isHeepElectron()  << std::endl;
- //           std::cout<<""<<std::endl;
- //      }
- //      for( unsigned int i=0; i < goodMuons.size(); ++i){
- //           std::cout<< i << " goodMuons eta  = " << goodMuons[i].tlv().Eta() << std::endl;
- //           std::cout<< i << " goodMuons pt   = " << goodMuons[i].tlv().Pt()  << std::endl;
- //            std::cout<< i << " goodMuons ID   = " << goodMuons[i].isTightMuon()  << std::endl;
- //           std::cout<<""<<std::endl;
- //      }
- //    }
-
+  if( (m_Channel.find("el")!= std::string::npos && goodElectrons.size()<1) || (m_Channel.find("mu")!= std::string::npos && goodMuons.size()<1) ) throw SError( SError::SkipEvent);
+  ++m_foundLepton;
+  ( *m_test )[ 1 ]++;
+  //-------------Find good AK8-------------//
+  // ak08: Loose ID - pt>100 GeV - |η| <2.4 - ΔR(lepton)>1
+  std::vector<UZH::Jet> goodFatJets;
+  std::vector<UZH::Jet> goodGenJets;
   std::vector<int> puppiMatch;
   for ( int i = 0; i < (m_jetAK8.N); ++i ) {
-
     UZH::Jet myjet( &m_jetAK8, i );
-    // int tightID = 0;
- //    if( (myjet.nhf()<0.90 && myjet.nemf()<0.90 &&  (myjet.cm()+myjet.nm()) >1) && ( (abs(myjet.eta())<=2.4 && myjet.chf()>0 && myjet.cm()>0 && myjet.cemf()<0.99) || abs(myjet.eta())>2.4)) tightID = 1;
-      //  if (m_eventInfo.lumiBlock  == 43 && m_eventInfo.eventNumber== 7276 && m_eventInfo.runNumber  == 1) {
-      //    std::cout << "---NEW AK8 JET---- : " << i << std::endl;
-      //   std::cout<< "myjet.IDTight() = " << myjet.IDTight()<<std::endl;
-      //    std::cout<< "myjet.eta() = " << myjet.eta() <<std::endl;
-      //   std::cout<< "myjet.pt() = " << myjet.pt() <<std::endl;
-      // }
-      
-    if ( i == 0 && !myjet.IDTight()) break;
+    if ( i == 0 && !myjet.IDLoose()) break;
     if (! (myjet.pt() > 200       )) continue;
     if (! (fabs(myjet.eta()) < 2.5)) continue;
     if (! (myjet.IDTight()        )) continue;
-  
     //Match to puppi jet
     float dRmin = 99.;
-    if(m_jetAK8Puppi.pt->size() < 2) throw SError( SError::SkipEvent);
+    if(m_jetAK8Puppi.pt->size() < 1) throw SError( SError::SkipEvent);
     for ( int ii = 0; ii < abs((m_jetAK8Puppi.pt->size())); ++ii ) {
-      UZH::Jet mypuppijet( &m_jetAK8Puppi, ii );
-     
+      UZH::Jet mypuppijet( &m_jetAK8Puppi, ii ); 
       float dR = myjet.DeltaR(mypuppijet);
       if ( dR > dRmin ) continue;
       bool samePuppiJet =0;
-
       for(int m=0;m<abs(puppiMatch.size());m++)
       {
         if(ii == puppiMatch.at(m)) samePuppiJet=1;
       }
-     // if (m_eventInfo.lumiBlock  == 43 && m_eventInfo.eventNumber== 7276 && m_eventInfo.runNumber  == 1) {
- //        std::cout <<"PUPPI jet nr" << ii << std::endl;
- //        std::cout << "dR = "<< dR <<std::endl;
- //        std::cout << "mypuppijet pt= " <<  mypuppijet.pt() << std::endl;
- //        // std::cout << "mypuppijet eta= " << mypuppijet.eta() << std::endl;
- //        // std::cout << "mypuppijet phi= " << mypuppijet.phi() << std::endl;
- //        std::cout << "mypuppijet M= " <<   mypuppijet.m() << std::endl;
- //        std::cout << "mypuppijet softdrop_mass= " <<   mypuppijet.softdrop_mass() << std::endl;
- //        std::cout << "mypuppijet softdrop_mass= " <<   mypuppijet.softdrop_massCorr() << std::endl;
- //         std::cout << "Is jet " << ii << " same PUPPI jet? Yes==1 ---> " <<   samePuppiJet << std::endl;
- //      }
-      
       if (samePuppiJet) continue;
       puppiMatch.push_back(ii);
-      dRmin = dR;
-      
+      dRmin = dR;   
       myjet.puppi_softdropmass= ApplyPuppiSoftdropMassCorrections(mypuppijet,m_puppisd_corr,m_isData);//mypuppijet.softdrop_mass();
       myjet.puppi_tau1        = mypuppijet.tau1();
       myjet.puppi_tau2        = mypuppijet.tau2();
-  
     }
-    
-
-    // if (m_eventInfo.lumiBlock  == 96 && m_eventInfo.eventNumber== 16283 && m_eventInfo.runNumber  == 1)
- //      {
- //        std::cout<< "dR = " << myjet.tlv().DeltaR(goodElectrons[0].tlv())<<std::endl;
- //         std::cout<< "jet pT = " << myjet.tlv().Pt() <<std::endl;
- //        std::cout<< "puppi_softdropmass = " << myjet.puppi_softdropmass <<std::endl;
- //      }
-    if(! FoundNoLeptonOverlap(goodElectrons,goodMuons,myjet.tlv()) ) continue;
-   
-       
+    if(! FoundNoLeptonOverlap(goodElectrons,goodMuons,myjet.tlv(), 1.0 ) ) continue;
     goodFatJets.push_back(myjet);
   }
-  
-// if (m_eventInfo.lumiBlock  == 167 && m_eventInfo.eventNumber== 28364 && m_eventInfo.runNumber  == 1) {
-//     std::cout<< "jj size =" <<  goodFatJets.size() << std::endl;
-//     for( unsigned int i=0; i < goodFatJets.size(); ++i){
-//          std::cout<< i << " goodFatJets mass = " << goodFatJets[i].puppi_softdropmass << std::endl;
-//          std::cout<< i << " goodFatJets pt   = " << goodFatJets[i].tlv().Pt()  << std::endl;
-//           std::cout<< i << " goodFatJets tau21   = " << goodFatJets[i].puppi_tau2/goodFatJets[i].puppi_tau1  << std::endl;
-//          std::cout<<""<<std::endl;
-//     }
-//   }
-
-
-
-  //-------------Select two fat jets-------------//
-  if( goodFatJets.size() < 2 ) throw SError( SError::SkipEvent );
-  ++m_passedLoose;
-  ( *m_test )[ 1 ]++;
-     
-   //-------------Make sure we have a PUPPI match-------------// 
-  if( goodFatJets[0].puppi_softdropmass == -99  || goodFatJets[1].puppi_softdropmass == -99
-    || goodFatJets[0].puppi_tau1 == -99         || goodFatJets[1].puppi_tau1 == -99
-    || goodFatJets[0].puppi_tau2 == -99         || goodFatJets[1].puppi_tau2 == -99
-     ) throw SError( SError::SkipEvent );
+  if(goodFatJets.size()<1) throw SError( SError::SkipEvent );
+  //-------------Make sure we have a PUPPI match-------------// 
+  if( goodFatJets[0].puppi_softdropmass == -99  || goodFatJets[0].puppi_tau1 == -99 || goodFatJets[0].puppi_tau2 == -99) throw SError( SError::SkipEvent );
   ++m_passedPuppi;
   ( *m_test )[ 2 ]++;
-
-  // std::vector<UZH::Jet> goodFatJets_sorted = SortAfterPuppiSDMass(goodFatJets);
-  goodFatJets.resize(2);
-  std::vector<UZH::Jet> goodFatJets_sorted = SortAfterTau21(goodFatJets);
-  
+ 
   //Match to gen jet
   if(!m_isData){
-    for( unsigned int i=0; i < goodFatJets_sorted.size(); ++i){
+    for( unsigned int i=0; i < goodFatJets.size(); ++i){
       float dRmin = 99.;
       int jetIdx = 99;
       for ( int j = 0; j < (m_genjetAK8.N); ++j ) {
         UZH::Jet genJet( &m_genjetAK8, j );
         if ( genJet.pt() < 50. ) continue;
-        float dR = (genJet.tlv()).DeltaR((goodFatJets_sorted.at(i)).tlv());
+        float dR = (genJet.tlv()).DeltaR((goodFatJets.at(i)).tlv());
         if ( dR > dRmin ) continue;
         dRmin = dR;
         jetIdx = j;
       }
-    UZH::Jet selectedJet( &m_genjetAK8, jetIdx );
-    goodGenJets.push_back(selectedJet);
+      UZH::Jet selectedJet( &m_genjetAK8, jetIdx );
+      goodGenJets.push_back(selectedJet);
+    }
   }
-}
-  
-  
-  // FOR SYNCH
-  // if (m_eventInfo.lumiBlock  == 94 && m_eventInfo.eventNumber== 15927 && m_eventInfo.runNumber  == 1) {
-  //   std::cout<< "jj mass =" << (goodFatJets_sorted[0].tlv() + goodFatJets_sorted[1].tlv()).M() << std::endl;
-  //   std::cout<< "jj deta = " << fabs( (goodFatJets_sorted[0].tlv()).Eta() - (goodFatJets_sorted[1].tlv()).Eta() ) << std::endl;
-  //   for( unsigned int i=0; i < goodFatJets.size(); ++i){
-  //        std::cout<< i << " goodFatJets_sorted mass = " << goodFatJets_sorted[i].puppi_softdropmass << std::endl;
-  //        std::cout<< i << " goodFatJets_sorted pt   = " << goodFatJets_sorted[i].tlv().Pt()  << std::endl;
-  //         std::cout<< i << " goodFatJets_sorted tau21   = " << goodFatJets_sorted[i].puppi_tau2/goodFatJets_sorted[i].puppi_tau1  << std::endl;
-  //        std::cout<<""<<std::endl;
-  //   }
-  // }
-  
-  // dEta cut
-  if( fabs( (goodFatJets_sorted[0].tlv()).Eta() - (goodFatJets_sorted[1].tlv()).Eta() )  > 1.3 ) throw SError( SError::SkipEvent );
-  
-  
-
-
-  
-  ++m_passedDEta;
+  //-------------Find AK4-------------//
+  // ak04: Loose ID - pt>30 GeV - |η| <2.4 - ΔR(lepton)>0.3 - ΔR(ak08)>0.8
+  std::vector<UZH::Jet> goodJetsAK4 = FindGoodJetsAK4(m_jetAK4,goodElectrons,goodMuons,goodFatJets[0].tlv());
+   if(goodJetsAK4.size()<1) throw SError( SError::SkipEvent );
+  ++m_passedAK4;
   ( *m_test )[ 3 ]++;
-  //debugEvent.push_back(m_eventInfo.eventNumber);
 
-  // Loose Mjj cut to slim down samples
-  TLorentzVector dijet = goodFatJets_sorted[0].tlv() + goodFatJets_sorted[1].tlv();
-  if( dijet.M() < 1000. ) throw SError( SError::SkipEvent );
   
-  ++m_passedMjj;
+  //-------------Find MET-------------//
+  // electron events: met>80 GeV
+  // muon events: met>40 GeV
+  float m_metCut = 40.0;
+  if (m_Channel.find("el")!= std::string::npos) m_metCut==80.0;
+  bool foundMet=false;
+  UZH::MissingEt goodMet( &m_missingEt, 0 );
+  if (goodMet.et() > m_metCut) foundMet=true;
+  if (!foundMet) throw SError( SError::SkipEvent);
+  ++m_passedMET;
   ( *m_test )[ 4 ]++;
+//
+//
+//
+//   //-------------Find leptonic W-------------//
+//   //sum of lepton passing selections and met,pt>200 GeV
+  TLorentzVector leptonCand_;
+
+  if      (m_Channel.find("el")!= std::string::npos)  leptonCand_ = goodElectrons[0].tlv();
+  else if (m_Channel.find("mu")!= std::string::npos)  leptonCand_ = goodMuons[0].tlv();
+  else{
+    std::cout<< "Channel not defined!! Please type in Channel==mu or Channel=el "<< std::endl;
+    throw SError( SError::SkipEvent);
+  }
+
+ TLorentzVector p4nu = NuMomentum( leptonCand_.Px(), leptonCand_.Py(), leptonCand_.Pz(), leptonCand_.Pt(), leptonCand_.E(), goodMet.corrPx(), goodMet.corrPy() );
+
+ if( (p4nu+leptonCand_).Pt() < 200. ) throw SError( SError::SkipEvent);
   
- 
-  //debugEvent.push_back(m_eventInfo.eventNumber);
-  
+// Double_t WmassLep    = TMath::Sqrt( 2*METCand_.at(0).p4.Pt()*leptonCand_.at(0).p4.Pt()*(1-cos(leptonCand_.at(0).p4.DeltaPhi(METCand_.at(0).p4))));
+
+
   ++m_passedEvents;
   ( *m_test )[ 5 ]++;
   
 
   // Fill tree
-  m_o_jj_nOtherLeptons     = goodElectrons.size()+goodMuons.size();
-  m_o_njj                  = goodFatJets_sorted.size();
-  m_o_mjj                  = dijet.M();
-  m_o_mpuppisoftdrop_jet1  = goodFatJets_sorted[0].puppi_softdropmass;
-  m_o_mpuppisoftdrop_jet2  = goodFatJets_sorted[1].puppi_softdropmass;
-  m_o_tau1_jet1            = goodFatJets_sorted[0].puppi_tau1;
-  m_o_tau1_jet2            = goodFatJets_sorted[1].puppi_tau1;
-  m_o_tau2_jet1            = goodFatJets_sorted[0].puppi_tau2;
-  m_o_tau2_jet2            = goodFatJets_sorted[1].puppi_tau2;
-  m_o_tau21_jet1           = goodFatJets_sorted[0].puppi_tau2/goodFatJets_sorted[0].puppi_tau1;
-  m_o_tau21_jet2           = goodFatJets_sorted[1].puppi_tau2/goodFatJets_sorted[1].puppi_tau1;
-  m_o_pt_jet1              = goodFatJets_sorted[0].tlv().Pt();
-  m_o_pt_jet2              = goodFatJets_sorted[1].tlv().Pt();
-  m_o_eta_jet1             = goodFatJets_sorted[0].tlv().Eta();
-  m_o_eta_jet2             = goodFatJets_sorted[1].tlv().Eta();
+  m_o_Wlep_pt         = (p4nu+leptonCand_).Pt()   ;
+  m_o_nLeptons        = goodElectrons.size()+goodMuons.size();
+  m_o_nJ              = goodFatJets.size();
+  m_o_mpuppisoftdrop  = goodFatJets[0].puppi_softdropmass;
+  m_o_tau1            = goodFatJets[0].puppi_tau1;
+  m_o_tau2            = goodFatJets[0].puppi_tau2;
+  m_o_tau21           = goodFatJets[0].puppi_tau2/goodFatJets[0].puppi_tau1;
+  m_o_pt              = goodFatJets[0].tlv().Pt();
+  m_o_eta             = goodFatJets[0].tlv().Eta();
+  m_o_lep_pt          = leptonCand_.Pt()   ;
+  m_o_lep_eta         = leptonCand_.Eta()   ;
+  m_o_lep_phi         = leptonCand_.Phi()   ;
+ 
   
   
   bool isfired = false;
   for( std::map<std::string,bool>::iterator it = (m_eventInfo.trigDecision)->begin(); it != (m_eventInfo.trigDecision)->end(); ++it){
-    if( (it->first).find("AK8PFJet360_TrimMass30")          != std::string::npos) HLTJet360_TrimMass30      = it->second;
-    if( (it->first).find("AK8PFHT700_TrimR0p1PT0p03Mass50") != std::string::npos) HLTHT700_TrimMass50       = it->second;
-    if( (it->first).find("PFHT650_WideJetMJJ950DEtaJJ1p5")  != std::string::npos) HLTHT650_MJJ950DEtaJJ1p5  = it->second;
-    if( (it->first).find("PFHT650_WideJetMJJ900DEtaJJ1p5")  != std::string::npos) HLTHT650_MJJ900DEtaJJ1p5  = it->second;
-    if( (it->first).find("PFHT800_v")                       != std::string::npos) HLTHT800                  = it->second;
-    if (HLTJet360_TrimMass30 or HLTHT700_TrimMass50 or HLTHT650_MJJ950DEtaJJ1p5 or HLTHT650_MJJ900DEtaJJ1p5 or HLTHT800) isfired = true;
+    if( (it->first).find("HLT_Mu50_v")                          != std::string::npos) HLTMu50 = it->second;
+    if( (it->first).find("HLT_Mu45_eta2p1_v")                   != std::string::npos) HLTMu45_eta2p1 = it->second;
+    if( (it->first).find("HLT_Ele105_CaloIdVT_GsfTrkIdT_v")     != std::string::npos) HLTEle105_CaloIdVT_GsfTrkIdT  = it->second;
+    if( (it->first).find("HLT_Ele115_CaloIdVT_GsfTrkIdT_v")     != std::string::npos) HLTEle115_CaloIdVT_GsfTrkIdT  = it->second;
+    if      (m_Channel.find("el")!= std::string::npos && (HLTEle105_CaloIdVT_GsfTrkIdT or HLTEle115_CaloIdVT_GsfTrkIdT)) isfired = true;
+    else if (m_Channel.find("mu")!= std::string::npos && (HLTMu50 or HLTMu45_eta2p1 )   )                                isfired = true;
   }
   
   b_lumi                          = m_eventInfo.lumiBlock;
@@ -477,19 +404,16 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   Flag_badChargedHadronFilter     = m_eventInfo.passFilter_chargedHadronTrackResolution;
   Flag_badMuonFilter              = m_eventInfo.passFilter_muonBadTrack;
   Flag_ECALDeadCell               = m_eventInfo.passFilter_ECALDeadCell;
-  HLT_JJ                          = isfired;
+  HLT_all                          = isfired;
   
 
   if(!m_isData){
-    m_o_genmjj                      = (goodGenJets[0].tlv() + goodGenJets[1].tlv()).M();
-    m_o_mgensoftdrop_jet1           = goodGenJets[0].softdropmass();
-    m_o_mgensoftdrop_jet2           = goodGenJets[1].softdropmass();
-    m_o_genpt_jet1                  = goodGenJets[0].tlv().Pt();
-    m_o_genpt_jet2                  = goodGenJets[1].tlv().Pt();
+    m_o_mgensoftdrop          = goodGenJets[0].softdropmass();
+    m_o_genpt                 = goodGenJets[0].tlv().Pt();
   }
   
-  jj_mergedVTruth_jet1                =  isMergedVJet(goodFatJets_sorted[0].tlv(),GenQuarks) ;
-  jj_mergedVTruth_jet2                =  isMergedVJet(goodFatJets_sorted[1].tlv(),GenQuarks) ;
+  std::vector<UZH::GenParticle> GenQuarks  = FindGeneratedQuarks(m_genParticle, m_isData);
+  mergedVTruth                =  isMergedVJet(goodFatJets[0].tlv(),GenQuarks) ;
   //
 
    
@@ -520,7 +444,7 @@ void VVanalysis::FillValidationHists( ValHistsType ht, const TString& status ) {
    } 
    else if( ht == JETS ){
       TString suffix = status + "Jets_";
-      Book( TH1F( suffix + "mjj", "mjj", 300, 0.0, 3000.0 ) )->Fill( m_o_mjj );
+      // Book( TH1F( suffix + "mjj", "mjj", 300, 0.0, 3000.0 ) )->Fill( m_o_mjj );
    } 
    else {
       SError error( SError::StopExecution );
@@ -555,20 +479,11 @@ void VVanalysis::clearBranches() {
   b_weightGen                   = 1.;
   b_weightPU                    = 1.;
   b_weightBtag                  = 1.;
-  
-  
-  m_o_mjj                       = -99;
-  m_o_genmjj                    = -99;
-  m_o_mpuppisoftdrop_jet1       = -99;
-  m_o_mpuppisoftdrop_jet2       = -99;
-  m_o_mgensoftdrop_jet1         = -99;
-  m_o_mgensoftdrop_jet2         = -99;
-  m_o_tau1_jet1                 = -99;
-  m_o_tau1_jet2                 = -99;
-  m_o_tau2_jet1                 = -99;
-  m_o_tau2_jet2                 = -99;
-  m_o_tau21_jet1                = -99;
-  m_o_tau21_jet2                = -99;
+  m_o_mpuppisoftdrop            = -99;
+  m_o_mgensoftdrop              = -99;
+  m_o_tau1                      = -99;
+  m_o_tau2                      = -99;
+  m_o_tau21                     = -99;
   Flag_goodVertices             = -99;
   Flag_globalTightHalo2016Filter= -99;
   Flag_HBHENoiseFilter          = -99;
@@ -577,14 +492,12 @@ void VVanalysis::clearBranches() {
   Flag_badChargedHadronFilter   = -99;
   Flag_badMuonFilter            = -99;
   Flag_ECALDeadCell             = -99;
-  HLTJet360_TrimMass30          = -99;
-  HLTHT700_TrimMass50           = -99;
-  HLTHT650_MJJ950DEtaJJ1p5      = -99;
-  HLTHT650_MJJ900DEtaJJ1p5      = -99;
-  HLTHT800                      = -99;
+  HLTMu50          = -99;
+  HLTMu45_eta2p1           = -99;
+  HLTEle105_CaloIdVT_GsfTrkIdT      = -99;
+  HLTEle115_CaloIdVT_GsfTrkIdT      = -99;
   nLeptonOverlap                = -99;
-  jj_mergedVTruth_jet1          = -99;
-  jj_mergedVTruth_jet2          = -99;
+  mergedVTruth               = -99;
 }
 
 

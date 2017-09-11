@@ -105,10 +105,10 @@ private:
   // Some counters:
   //
   SSummedVar< Int_t > m_allEvents; //!
-  SSummedVar< Int_t > m_passedLoose; //!
+  SSummedVar< Int_t > m_foundLepton; //!
   SSummedVar< Int_t > m_passedPuppi; //!
-  SSummedVar< Int_t > m_passedDEta; //!
-  SSummedVar< Int_t > m_passedMjj; //!
+  SSummedVar< Int_t > m_passedAK4; //!
+  SSummedVar< Int_t > m_passedMET; //!
   SSummedVar< Int_t > m_passedEvents; //!
   SSummedVar< std::vector< Int_t > > m_test; //!
   
@@ -117,26 +117,20 @@ private:
   float     nSumGenWeights;
   
   // The output variables
-  float     m_o_mjj                       ; 
-  float     m_o_genmjj                    ; 
-  float     m_o_mpuppisoftdrop_jet1       ; 
-  float     m_o_mpuppisoftdrop_jet2       ; 
-  float     m_o_mgensoftdrop_jet1         ; 
-  float     m_o_mgensoftdrop_jet2         ; 
-  float     m_o_tau1_jet1                 ; 
-  float     m_o_tau1_jet2                 ; 
-  float     m_o_tau2_jet1                 ; 
-  float     m_o_tau2_jet2                 ; 
-  float     m_o_tau21_jet1                ; 
-  float     m_o_tau21_jet2                ;
-  float     m_o_genpt_jet1                ;
-  float     m_o_genpt_jet2                ;
-  float     m_o_pt_jet1                   ;
-  float     m_o_pt_jet2                   ;
-  float     m_o_eta_jet1                   ;
-  float     m_o_eta_jet2                   ;
-  int       m_o_njj                       ;
-  int       m_o_jj_nOtherLeptons          ;
+  float     m_o_mpuppisoftdrop  ; 
+  float     m_o_mgensoftdrop    ; 
+  float     m_o_tau1            ; 
+  float     m_o_tau2            ; 
+  float     m_o_tau21           ; 
+  float     m_o_genpt           ;
+  float     m_o_pt              ;
+  float     m_o_eta             ;
+  int       m_o_nJ             ;
+  int       m_o_nLeptons        ;
+  float     m_o_Wlep_pt              ;
+  float     m_o_lep_pt              ;
+  float     m_o_lep_eta             ;
+  float     m_o_lep_phi             ;
   
   
   int       Flag_goodVertices             ; 
@@ -147,15 +141,13 @@ private:
   int       Flag_badChargedHadronFilter   ; 
   int       Flag_badMuonFilter            ;    
   int       Flag_ECALDeadCell             ;                                     
-  float     HLTJet360_TrimMass30          ; 
-  float     HLTHT700_TrimMass50           ; 
-  float     HLTHT650_MJJ950DEtaJJ1p5      ; 
-  float     HLTHT650_MJJ900DEtaJJ1p5      ; 
-  float     HLTHT800                      ;
-  bool      HLT_JJ                        ;
+  float     HLTMu50          ; 
+  float     HLTMu45_eta2p1           ; 
+  float     HLTEle105_CaloIdVT_GsfTrkIdT      ; 
+  float     HLTEle115_CaloIdVT_GsfTrkIdT      ; 
+  bool      HLT_all                        ;
   int       nLeptonOverlap                ; 
-  int       jj_mergedVTruth_jet1          ; 
-  int       jj_mergedVTruth_jet2          ; 
+  int       mergedVTruth          ; 
   double    b_xSec                        ;
   int       b_event                       ;
   int       b_lumi                        ;
@@ -170,9 +162,11 @@ private:
   
   //naming
   std::string m_jetAK8Name;
+  std::string m_jetAK4Name;
   std::string m_genjetAK8Name;
   std::string m_muonName;
   std::string m_electronName;
+  std::string m_missingEtName;
   std::string m_jetAK8PuppiName;
   std::string m_genParticleName;
   std::string m_PUPPIJEC;
