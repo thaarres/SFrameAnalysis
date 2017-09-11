@@ -170,7 +170,7 @@ private:
   std::string m_jetAK8PuppiName;
   std::string m_genParticleName;
   std::string m_PUPPIJEC;
-  
+
   std::vector<TF1*> m_puppisd_corr      ;
 
   std::vector<int> debugEvent;
