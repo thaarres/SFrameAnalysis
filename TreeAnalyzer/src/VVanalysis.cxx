@@ -144,7 +144,7 @@ void VVanalysis::BeginInputData( const SInputData& id ) throw( SError ) { //call
   
   // Declare output variables:
   DeclareVariable( b_lumi                         , "lumi"  );
-  DeclareVariable( b_event                        , "event"  );
+  DeclareVariable( b_event                        , "evt"  );
   DeclareVariable( b_run                          , "run"  );
   DeclareVariable( b_weight                       , "weight"  );
   DeclareVariable( b_weightGen                    , "genWeight");
@@ -378,9 +378,9 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   ++m_passedPuppi;
   ( *m_test )[ 2 ]++;
 
-
-     
-  std::vector<UZH::Jet> goodFatJets_sorted = SortAfterPuppiSDMass(goodFatJets);
+  // std::vector<UZH::Jet> goodFatJets_sorted = SortAfterPuppiSDMass(goodFatJets);
+  goodFatJets.resize(2);
+  std::vector<UZH::Jet> goodFatJets_sorted = SortAfterTau21(goodFatJets);
   
   //Match to gen jet
   if(!m_isData){

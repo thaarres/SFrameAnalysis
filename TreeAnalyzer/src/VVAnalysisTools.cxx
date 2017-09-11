@@ -131,6 +131,24 @@ std::vector<UZH::Jet> SortAfterPuppiSDMass(std::vector <UZH::Jet> jets){
     return sorted;
 }
 
+std::vector<UZH::Jet> SortAfterTau21(std::vector <UZH::Jet> jets){
+    std::vector<float> tau21;
+    std::map<float,int> map;
+    for(unsigned int i=0;i< jets.size(); i++)
+    {
+      tau21.push_back(jets[i].puppi_tau2/jets[i].puppi_tau1);
+      map[jets[i].puppi_tau2/jets[i].puppi_tau1] = i;
+    }
+    std::sort(tau21.begin(),tau21.end(),std::greater<float>() );
+    std::vector<UZH::Jet> sorted;
+    for(unsigned int i=0;i<tau21.size();i++)
+    {
+      sorted.push_back(jets.at(map[tau21.at(tau21.size()-i-1)]));
+    }
+    return sorted;
+}
+
+
 
 void PrintEvent(std::vector<UZH::Jet> jets  )
 {
