@@ -29,7 +29,7 @@ def waitForBatchJobs(runningJobs, listOfJobs, userName):
 		
 
 def createJobs(i,f, outfolder, outname,channel='el'):
-	template=open("config/submitVV.xml", 'r').read()
+	template=open("config/submitJobs.xml", 'r').read()
 	template=template.replace('OUTPUT', ('<Cycle Name="VVanalysis" OutputDirectory="%s/" PostFix="" TargetLumi="1.0">')%outfolder)
 	template=template.replace('INPUTHEADER', ('<InputData Lumi="0.0" NEventsMax="-1" NEventsSkip="0" Type="%s" Version="%s">')%(outname,i) )
 	template=template.replace('INFILE', ('<In FileName="dcap://t3se01.psi.ch:22125/%s" Lumi="1.0" />')%f)
@@ -66,7 +66,7 @@ if __name__ == "__main__":
     if   sys.argv[1].find("QCDpt")!=-1: pattern= "QCD_Pt_"
     elif sys.argv[1].find("QCDht")!=-1: pattern= "QCD_HT"
     elif sys.argv[1].find("QCDherwig")!=-1: pattern= "QCD_Pt-15to7000"
-	elif sys.argv[1].find("TTpythia")!=-1: pattern= "TT_TuneCUETP8M2T4_13TeV-powheg-pythia8"
+    elif sys.argv[1].find("TTpythia")!=-1: pattern= "TT_TuneCUETP8M2T4_13TeV-powheg-pythia8"
     else:
     	print "Please pass either: QCDpt/ht/herwig og TTpythia"
     	sys.exit()
@@ -79,9 +79,10 @@ if __name__ == "__main__":
 	
     try: os.stat(outfolder+'/logs') 
     except: os.mkdir(outfolder+'/logs')
-    
+   
 #    pattern = "/pnfs/psi.ch/cms/trivcat/store/t3groups/uniz-higgs/Summer16/Ntuple_80_20170203/QstarToQW_M-2500_TuneCUETP8M2T4_13TeV-pythia8/QstarToQW_M-2500_TuneCUETP8M2T4_13TeV-pythia820170203_signal/170203_131617/0000/flatTuple_1.root"
-    filelist = glob.glob('/pnfs/psi.ch/cms/trivcat/store/t3groups/uniz-higgs/Summer16/Ntuple_80_20170206/'+pattern+'*/*/*/*/*.root')
+    if pattern.find("TT_TuneCUETP8M2T4_13TeV-powheg-pythia8")!=-1: filelist = glob.glob('/pnfs/psi.ch/cms/trivcat/store/t3groups/uniz-higgs/Summer16/Ntuple_80_20170206/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/*/*/*.root')
+    else: filelist = glob.glob('/pnfs/psi.ch/cms/trivcat/store/t3groups/uniz-higgs/Summer16/Ntuple_80_20170206/'+pattern+'*/*/*/*/*.root')
     jobList = 'joblist.txt'
     jobs = open(jobList, 'w')
     outs = []
