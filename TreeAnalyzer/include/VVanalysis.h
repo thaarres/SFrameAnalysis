@@ -121,7 +121,9 @@ private:
   float     m_o_mgensoftdrop    ; 
   float     m_o_tau1            ; 
   float     m_o_tau2            ; 
-  float     m_o_tau21           ; 
+  float     m_o_tau3            ; 
+  float     m_o_tau21           ;
+  float     m_o_csv             ;  
   float     m_o_genpt           ;
   float     m_o_pt              ;
   float     m_o_eta             ;

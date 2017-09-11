@@ -159,18 +159,20 @@ void VVanalysis::BeginInputData( const SInputData& id ) throw( SError ) { //call
   DeclareVariable( b_weightPU               , "puWeight");
   DeclareVariable( b_xSec                   , "xsec");
   DeclareVariable( m_o_nJ                   , "njj");
-  DeclareVariable( m_o_mpuppisoftdrop       , "jet_softDrop_mass");
-  DeclareVariable( m_o_mgensoftdrop         , "jet_gen_softDrop_mass");
-  DeclareVariable( m_o_tau1                 , "jet_tau1");  
-  DeclareVariable( m_o_tau2                 , "jet_tau2");  
-  DeclareVariable( m_o_tau21                , "jet_tau21"); 
-  DeclareVariable( m_o_pt                   , "jet_pt");
-  DeclareVariable( m_o_eta                  , "jet_eta");
-  DeclareVariable( m_o_genpt                , "jet_gen_pt");
-  DeclareVariable( m_o_lep_pt              ,  "lep_pt");
-  DeclareVariable( m_o_Wlep_pt              ,  "Wlep_pt");
-  DeclareVariable( m_o_lep_eta             ,  "lep_eta");
-  DeclareVariable( m_o_lep_phi             ,  "lep_phi");
+  DeclareVariable( m_o_mpuppisoftdrop       , "Whadr_softDrop_mass");
+  DeclareVariable( m_o_mgensoftdrop         , "Whadr_gen_softDrop_mass");
+  DeclareVariable( m_o_tau1                 , "Whadr_tau1");  
+  DeclareVariable( m_o_tau2                 , "Whadr_tau2");  
+  DeclareVariable( m_o_tau2                 , "Whadr_tau3");  
+  DeclareVariable( m_o_tau21                , "Whadr_tau21"); 
+  DeclareVariable( m_o_pt                   , "Whadr_pt");
+  DeclareVariable( m_o_eta                  , "Whadr_eta");
+  DeclareVariable( m_o_genpt                , "Whadr_gen_pt");
+  DeclareVariable( m_o_csv                  , "Whadr_csv");
+  DeclareVariable( m_o_lep_pt               , "lep_pt");
+  DeclareVariable( m_o_Wlep_pt              , "Wlep_pt");
+  DeclareVariable( m_o_lep_eta              , "lep_eta");
+  DeclareVariable( m_o_lep_phi              , "lep_phi");
   
   DeclareVariable( Flag_goodVertices              , "Flag_goodVertices");
   DeclareVariable( Flag_globalTightHalo2016Filter , "Flag_CSCTightHaloFilter");
@@ -300,6 +302,7 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
       myjet.puppi_softdropmass= ApplyPuppiSoftdropMassCorrections(mypuppijet,m_puppisd_corr,m_isData);//mypuppijet.softdrop_mass();
       myjet.puppi_tau1        = mypuppijet.tau1();
       myjet.puppi_tau2        = mypuppijet.tau2();
+      myjet.puppi_tau3        = mypuppijet.tau3();
     }
     if(! FoundNoLeptonOverlap(goodElectrons,goodMuons,myjet.tlv(), 1.0 ) ) continue;
     goodFatJets.push_back(myjet);
@@ -378,6 +381,8 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   m_o_mpuppisoftdrop  = goodFatJets[0].puppi_softdropmass;
   m_o_tau1            = goodFatJets[0].puppi_tau1;
   m_o_tau2            = goodFatJets[0].puppi_tau2;
+  m_o_tau3            = goodFatJets[0].puppi_tau3;
+  m_o_csv             = goodFatJets[0].csv();
   m_o_tau21           = goodFatJets[0].puppi_tau2/goodFatJets[0].puppi_tau1;
   m_o_pt              = goodFatJets[0].tlv().Pt();
   m_o_eta             = goodFatJets[0].tlv().Eta();
