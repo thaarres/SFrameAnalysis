@@ -255,6 +255,51 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   if (!m_isData) {
     b_weight= getEventWeight();
   }
+  
+  int HLTJet360_TrimMass30_     = 0;     
+  int HLTHT700_TrimMass50_      = 0;     
+  int HLTHT650_MJJ950DEtaJJ1p5_ = 0;
+  int HLTHT650_MJJ900DEtaJJ1p5_ = 0;
+  int HLTHT800_                 = 0; 
+    
+  bool isfired = false;
+  for( std::map<std::string,bool>::iterator it = (m_eventInfo.trigDecision)->begin(); it != (m_eventInfo.trigDecision)->end(); ++it){
+    if( (it->first).find("AK8PFJet360_TrimMass30")          != std::string::npos) HLTJet360_TrimMass30_      = it->second;
+    if( (it->first).find("AK8PFHT700_TrimR0p1PT0p03Mass50") != std::string::npos) HLTHT700_TrimMass50_       = it->second;
+    if( (it->first).find("PFHT650_WideJetMJJ950DEtaJJ1p5")  != std::string::npos) HLTHT650_MJJ950DEtaJJ1p5_  = it->second;
+    if( (it->first).find("PFHT650_WideJetMJJ900DEtaJJ1p5")  != std::string::npos) HLTHT650_MJJ900DEtaJJ1p5_  = it->second;
+    if( (it->first).find("PFHT800_v")                       != std::string::npos) HLTHT800_                  = it->second;
+    if (HLTJet360_TrimMass30 or HLTHT700_TrimMass50 or HLTHT650_MJJ950DEtaJJ1p5 or HLTHT650_MJJ900DEtaJJ1p5 or HLTHT800) isfired = true;
+  }
+   if (m_isData && !isfired)  throw SError( SError::SkipEvent );
+   
+   HLTJet360_TrimMass30      = HLTJet360_TrimMass30_      ;
+   HLTHT700_TrimMass50       = HLTHT700_TrimMass50_       ;
+   HLTHT650_MJJ950DEtaJJ1p5  = HLTHT650_MJJ950DEtaJJ1p5_  ;
+   HLTHT650_MJJ900DEtaJJ1p5  = HLTHT650_MJJ900DEtaJJ1p5_  ;
+   HLTHT800                  = HLTHT800_                  ;
+   
+   
+   bool isgood = false;
+   if(m_eventInfo.PV_filter && m_eventInfo.passFilter_CSCHalo && m_eventInfo.passFilter_HBHELoose && m_eventInfo.passFilter_HBHEIso && m_eventInfo.passFilter_chargedHadronTrackResolution && m_eventInfo.passFilter_muonBadTrack && m_eventInfo.passFilter_ECALDeadCell) isgood=true;
+   if (m_isData && !isgood)  throw SError( SError::SkipEvent );
+   
+  b_lumi                          = m_eventInfo.lumiBlock;
+  b_event                         = m_eventInfo.eventNumber;
+  b_run                           = m_eventInfo.runNumber;
+  Flag_goodVertices               = m_eventInfo.PV_filter;
+  Flag_globalTightHalo2016Filter  = m_eventInfo.passFilter_CSCHalo;
+  Flag_HBHENoiseFilter            = m_eventInfo.passFilter_HBHELoose;
+  Flag_HBHENoiseIsoFilter         = m_eventInfo.passFilter_HBHEIso;
+  Flag_eeBadScFilter              = m_eventInfo.passFilter_EEBadSc; // not used
+  Flag_badChargedHadronFilter     = m_eventInfo.passFilter_chargedHadronTrackResolution;
+  Flag_badMuonFilter              = m_eventInfo.passFilter_muonBadTrack;
+  Flag_ECALDeadCell               = m_eventInfo.passFilter_ECALDeadCell;
+  HLT_JJ                          = isfired;
+  
+  
+
+ if (m_isData && !isfired)  throw SError( SError::SkipEvent );
   // for inclusive signal samples only take generated hadronic events
   // if( m_isSignal && !SignalIsHad( m_genParticle, m_Channel)) throw SError( SError::SkipEvent);
 
@@ -378,7 +423,8 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   ++m_passedPuppi;
   ( *m_test )[ 2 ]++;
 
-  // std::vector<UZH::Jet> goodFatJets_sorted = SortAfterPuppiSDMass(goodFatJets);
+  // std::vector<UZH::Jet> goodFatJets_sorted = SortAfterPuppiSDMass(goodFatJets); //deprecated! Now sort after tau21
+  
   goodFatJets.resize(2);
   std::vector<UZH::Jet> goodFatJets_sorted = SortAfterTau21(goodFatJets);
   
@@ -426,7 +472,7 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
 
   // Loose Mjj cut to slim down samples
   TLorentzVector dijet = goodFatJets_sorted[0].tlv() + goodFatJets_sorted[1].tlv();
-  if( dijet.M() < 1000. ) throw SError( SError::SkipEvent );
+  if( dijet.M() < 700. ) throw SError( SError::SkipEvent );
   
   ++m_passedMjj;
   ( *m_test )[ 4 ]++;
@@ -455,31 +501,6 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   m_o_eta_jet1             = goodFatJets_sorted[0].tlv().Eta();
   m_o_eta_jet2             = goodFatJets_sorted[1].tlv().Eta();
   
-  
-  bool isfired = false;
-  for( std::map<std::string,bool>::iterator it = (m_eventInfo.trigDecision)->begin(); it != (m_eventInfo.trigDecision)->end(); ++it){
-    if( (it->first).find("AK8PFJet360_TrimMass30")          != std::string::npos) HLTJet360_TrimMass30      = it->second;
-    if( (it->first).find("AK8PFHT700_TrimR0p1PT0p03Mass50") != std::string::npos) HLTHT700_TrimMass50       = it->second;
-    if( (it->first).find("PFHT650_WideJetMJJ950DEtaJJ1p5")  != std::string::npos) HLTHT650_MJJ950DEtaJJ1p5  = it->second;
-    if( (it->first).find("PFHT650_WideJetMJJ900DEtaJJ1p5")  != std::string::npos) HLTHT650_MJJ900DEtaJJ1p5  = it->second;
-    if( (it->first).find("PFHT800_v")                       != std::string::npos) HLTHT800                  = it->second;
-    if (HLTJet360_TrimMass30 or HLTHT700_TrimMass50 or HLTHT650_MJJ950DEtaJJ1p5 or HLTHT650_MJJ900DEtaJJ1p5 or HLTHT800) isfired = true;
-  }
-  
-  b_lumi                          = m_eventInfo.lumiBlock;
-  b_event                         = m_eventInfo.eventNumber;
-  b_run                           = m_eventInfo.runNumber;
-  Flag_goodVertices               = m_eventInfo.PV_filter;
-  Flag_globalTightHalo2016Filter  = m_eventInfo.passFilter_CSCHalo;
-  Flag_HBHENoiseFilter            = m_eventInfo.passFilter_HBHELoose;
-  Flag_HBHENoiseIsoFilter         = m_eventInfo.passFilter_HBHEIso;
-  Flag_eeBadScFilter              = m_eventInfo.passFilter_EEBadSc;
-  Flag_badChargedHadronFilter     = m_eventInfo.passFilter_chargedHadronTrackResolution;
-  Flag_badMuonFilter              = m_eventInfo.passFilter_muonBadTrack;
-  Flag_ECALDeadCell               = m_eventInfo.passFilter_ECALDeadCell;
-  HLT_JJ                          = isfired;
-  
-
   if(!m_isData){
     m_o_genmjj                      = (goodGenJets[0].tlv() + goodGenJets[1].tlv()).M();
     m_o_mgensoftdrop_jet1           = goodGenJets[0].softdropmass();
