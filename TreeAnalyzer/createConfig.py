@@ -39,7 +39,7 @@ def createJobs(i,f, outfolder, outname):
 	if   f.find("JetHT")!=-1: 
 		template=template.replace('ISSIGNAL', '<Item Name="IsSignal" Value="false"/>')
 		template=template.replace('ISDATA'  , '<Item Name="IsData"   Value="true"/>')
-	elif f.find("QCD")!=-1  : 
+	elif f.find("QCD")!=-1 or f.find("WJets")!=-1: 
 		template=template.replace('ISSIGNAL', '<Item Name="IsSignal" Value="false"/>')
 		template=template.replace('ISDATA'  , '<Item Name="IsData"   Value="false"/>')
 	else:
@@ -79,7 +79,8 @@ if __name__ == "__main__":
     elif sys.argv[1].find("QCDht")!=-1: pattern= "QCD_HT"
     elif sys.argv[1].find("QCDherwig")!=-1: pattern= "QCD_Pt-15to7000"
     elif sys.argv[1].find("TTpythia")!=-1: pattern= "TT_TuneCUETP8M2T4_13TeV-powheg-pythia8"
-    elif sys.argv[1].find("data")!=-1 : pattern= "JetHT_Run2016B-03Feb2017"
+    elif sys.argv[1].find("data")!=-1 : pattern= "JetHT"
+    elif sys.argv[1].find("VJets")!=-1 : pattern= "WJetsToQQ*"
     else:
     	print "Please pass either: QCDpt/ht/herwig og TTpythia"
     	sys.exit()
@@ -95,13 +96,13 @@ if __name__ == "__main__":
    
 #    pattern = "/pnfs/psi.ch/cms/trivcat/store/t3groups/uniz-higgs/Summer16/Ntuple_80_20170203/QstarToQW_M-2500_TuneCUETP8M2T4_13TeV-pythia8/QstarToQW_M-2500_TuneCUETP8M2T4_13TeV-pythia820170203_signal/170203_131617/0000/flatTuple_1.root"
     if   pattern.find("TT_TuneCUETP8M2T4_13TeV-powheg-pythia8")!=-1: filelist = glob.glob('/pnfs/psi.ch/cms/trivcat/store/t3groups/uniz-higgs/Summer16/Ntuple_80_20170206/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/*/*/*.root')
-    elif pattern.find("JetHT_Run2016B")!=-1                        : filelist = glob.glob('/pnfs/psi.ch/cms/trivcat/store/t3groups/uniz-higgs/Summer16/Ntuple_80_20170203/JetHT/'+pattern+'*/*/*.root')
+    elif pattern.find("JetHT")!=-1                                 : filelist = glob.glob('/pnfs/psi.ch/cms/trivcat/store/user/clange/Ntuple_8021_20170602/JetHT/JetHT_*/*/*/flatTupl*.root')
     else: 															 filelist = glob.glob('/pnfs/psi.ch/cms/trivcat/store/t3groups/uniz-higgs/Summer16/Ntuple_80_20170203/'+pattern+'*/*/*/*/*.root')
     jobList = 'joblist.txt'
     jobs = open(jobList, 'w')
     outs = []
     for i,f in enumerate(filelist):
-		print f
+		if f.find("JetHT_Run2016F-23Sep2016-v1JetHT_G_20170602")!=-1: continue
 		outname = f.split("/")[10]
 		print outname
 		fout = createJobs(i,f, outfolder, outname)

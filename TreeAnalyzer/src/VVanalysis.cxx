@@ -128,7 +128,7 @@ void VVanalysis::BeginInputFile( const SInputData& ) throw( SError ) { //For eac
   // Get cross section
   b_xSec                        = 1.;
   TString infile = TString(this->GetHistInputFile()->GetName());
-  b_xSec  = m_xSec.getLumiWeight( infile ); 
+  if (!m_isData) b_xSec  = m_xSec.getLumiWeight( infile ); 
   m_logger << INFO << "Cross section set to " << b_xSec << " for file " << infile <<  SLogger::endmsg;
   if( b_xSec < 0.) throw SError( SError::SkipFile );
 
@@ -314,7 +314,6 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   std::vector<UZH::Electron> goodElectrons = FindGoodLeptons(m_electron);
   std::vector<UZH::Muon>     goodMuons     = FindGoodLeptons(m_muon);
   
-  
  // if (m_eventInfo.lumiBlock  == 43 && m_eventInfo.eventNumber== 7276 && m_eventInfo.runNumber  == 1) {
  //      std::cout<< "goodElectrons size =" <<  goodElectrons.size() << std::endl;
  //      for( unsigned int i=0; i < goodElectrons.size(); ++i){
@@ -335,15 +334,6 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   for ( int i = 0; i < (m_jetAK8.N); ++i ) {
 
     UZH::Jet myjet( &m_jetAK8, i );
-    // int tightID = 0;
- //    if( (myjet.nhf()<0.90 && myjet.nemf()<0.90 &&  (myjet.cm()+myjet.nm()) >1) && ( (abs(myjet.eta())<=2.4 && myjet.chf()>0 && myjet.cm()>0 && myjet.cemf()<0.99) || abs(myjet.eta())>2.4)) tightID = 1;
-      //  if (m_eventInfo.lumiBlock  == 43 && m_eventInfo.eventNumber== 7276 && m_eventInfo.runNumber  == 1) {
-      //    std::cout << "---NEW AK8 JET---- : " << i << std::endl;
-      //   std::cout<< "myjet.IDTight() = " << myjet.IDTight()<<std::endl;
-      //    std::cout<< "myjet.eta() = " << myjet.eta() <<std::endl;
-      //   std::cout<< "myjet.pt() = " << myjet.pt() <<std::endl;
-      // }
-      
     if ( i == 0 && !myjet.IDTight()) break;
     if (! (myjet.pt() > 200       )) continue;
     if (! (fabs(myjet.eta()) < 2.5)) continue;
@@ -364,15 +354,9 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
         if(ii == puppiMatch.at(m)) samePuppiJet=1;
       }
      // if (m_eventInfo.lumiBlock  == 43 && m_eventInfo.eventNumber== 7276 && m_eventInfo.runNumber  == 1) {
- //        std::cout <<"PUPPI jet nr" << ii << std::endl;
- //        std::cout << "dR = "<< dR <<std::endl;
  //        std::cout << "mypuppijet pt= " <<  mypuppijet.pt() << std::endl;
- //        // std::cout << "mypuppijet eta= " << mypuppijet.eta() << std::endl;
- //        // std::cout << "mypuppijet phi= " << mypuppijet.phi() << std::endl;
- //        std::cout << "mypuppijet M= " <<   mypuppijet.m() << std::endl;
- //        std::cout << "mypuppijet softdrop_mass= " <<   mypuppijet.softdrop_mass() << std::endl;
- //        std::cout << "mypuppijet softdrop_mass= " <<   mypuppijet.softdrop_massCorr() << std::endl;
- //         std::cout << "Is jet " << ii << " same PUPPI jet? Yes==1 ---> " <<   samePuppiJet << std::endl;
+ //        std::cout << "mypuppijet eta= " << mypuppijet.eta() << std::endl;
+ //        std::cout << "mypuppijet phi= " << mypuppijet.phi() << std::endl;
  //      }
       
       if (samePuppiJet) continue;
@@ -386,28 +370,12 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
     }
     
 
-    // if (m_eventInfo.lumiBlock  == 96 && m_eventInfo.eventNumber== 16283 && m_eventInfo.runNumber  == 1)
- //      {
- //        std::cout<< "dR = " << myjet.tlv().DeltaR(goodElectrons[0].tlv())<<std::endl;
- //         std::cout<< "jet pT = " << myjet.tlv().Pt() <<std::endl;
- //        std::cout<< "puppi_softdropmass = " << myjet.puppi_softdropmass <<std::endl;
- //      }
+   
     if(! FoundNoLeptonOverlap(goodElectrons,goodMuons,myjet.tlv()) ) continue;
    
        
     goodFatJets.push_back(myjet);
   }
-  
-// if (m_eventInfo.lumiBlock  == 167 && m_eventInfo.eventNumber== 28364 && m_eventInfo.runNumber  == 1) {
-//     std::cout<< "jj size =" <<  goodFatJets.size() << std::endl;
-//     for( unsigned int i=0; i < goodFatJets.size(); ++i){
-//          std::cout<< i << " goodFatJets mass = " << goodFatJets[i].puppi_softdropmass << std::endl;
-//          std::cout<< i << " goodFatJets pt   = " << goodFatJets[i].tlv().Pt()  << std::endl;
-//           std::cout<< i << " goodFatJets tau21   = " << goodFatJets[i].puppi_tau2/goodFatJets[i].puppi_tau1  << std::endl;
-//          std::cout<<""<<std::endl;
-//     }
-//   }
-
 
 
   //-------------Select two fat jets-------------//
@@ -422,7 +390,8 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
      ) throw SError( SError::SkipEvent );
   ++m_passedPuppi;
   ( *m_test )[ 2 ]++;
-
+  
+  // goodFatJets.resize(2);
   // std::vector<UZH::Jet> goodFatJets_sorted = SortAfterPuppiSDMass(goodFatJets); //deprecated! Now sort after tau21
   
   goodFatJets.resize(2);
@@ -446,19 +415,7 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   }
 }
   
-  
-  // FOR SYNCH
-  // if (m_eventInfo.lumiBlock  == 94 && m_eventInfo.eventNumber== 15927 && m_eventInfo.runNumber  == 1) {
-  //   std::cout<< "jj mass =" << (goodFatJets_sorted[0].tlv() + goodFatJets_sorted[1].tlv()).M() << std::endl;
-  //   std::cout<< "jj deta = " << fabs( (goodFatJets_sorted[0].tlv()).Eta() - (goodFatJets_sorted[1].tlv()).Eta() ) << std::endl;
-  //   for( unsigned int i=0; i < goodFatJets.size(); ++i){
-  //        std::cout<< i << " goodFatJets_sorted mass = " << goodFatJets_sorted[i].puppi_softdropmass << std::endl;
-  //        std::cout<< i << " goodFatJets_sorted pt   = " << goodFatJets_sorted[i].tlv().Pt()  << std::endl;
-  //         std::cout<< i << " goodFatJets_sorted tau21   = " << goodFatJets_sorted[i].puppi_tau2/goodFatJets_sorted[i].puppi_tau1  << std::endl;
-  //        std::cout<<""<<std::endl;
-  //   }
-  // }
-  
+
   // dEta cut
   if( fabs( (goodFatJets_sorted[0].tlv()).Eta() - (goodFatJets_sorted[1].tlv()).Eta() )  > 1.3 ) throw SError( SError::SkipEvent );
   

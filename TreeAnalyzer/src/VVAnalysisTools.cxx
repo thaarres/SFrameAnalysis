@@ -67,7 +67,7 @@ std::vector<UZH::Electron> FindGoodLeptons(Ntuple::ElectronNtupleObject m_electr
     for(int i=0;i< m_electrons.N;i++)
     {
         UZH::Electron ele(&m_electrons,i);
-        if( fabs( ele.superCluster_eta() ) >= 2.5 ) continue;
+	//        if( fabs( ele.superCluster_eta() ) >= 2.5 ) continue;
         if( ! ele.isHeepElectron()  ) continue;
         goodEle.push_back(ele);
     }
