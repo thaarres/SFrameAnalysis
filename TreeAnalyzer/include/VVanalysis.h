@@ -123,6 +123,8 @@ private:
   float     m_o_tau2            ; 
   float     m_o_tau3            ; 
   float     m_o_tau21           ;
+  float     m_o_tau32           ;
+  float     m_o_highestSubJetCSV           ;
   float     m_o_csv             ;  
   float     m_o_genpt           ;
   float     m_o_pt              ;
