@@ -164,7 +164,9 @@ void VVanalysis::BeginInputData( const SInputData& id ) throw( SError ) { //call
   DeclareVariable( m_o_tau1                 , "Whadr_tau1");  
   DeclareVariable( m_o_tau2                 , "Whadr_tau2");  
   DeclareVariable( m_o_tau2                 , "Whadr_tau3");  
-  DeclareVariable( m_o_tau21                , "Whadr_tau21"); 
+  DeclareVariable( m_o_tau21                , "Whadr_tau21");
+  DeclareVariable( m_o_tau32                , "Whadr_tau32"); 
+  DeclareVariable( m_o_highestSubJetCSV                , "Whadr_highestSubJetCSV"); 
   DeclareVariable( m_o_pt                   , "Whadr_pt");
   DeclareVariable( m_o_eta                  , "Whadr_eta");
   DeclareVariable( m_o_genpt                , "Whadr_gen_pt");
@@ -284,6 +286,16 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
     if (! (myjet.pt() > 200       )) continue;
     if (! (fabs(myjet.eta()) < 2.5)) continue;
     if (! (myjet.IDTight()        )) continue;
+
+    float highestSubJetCSV = -1;
+    //std::cout<<    myjet.subjet_softdrop_N()<<std::endl;
+    for ( int s = 0; s < (myjet.subjet_softdrop_N()); ++s ) {
+      //std::cout<<"subjet csv"<<myjet.subjet_softdrop_csv()[s]<<std::endl;
+      if (myjet.subjet_softdrop_csv()[s] > highestSubJetCSV){
+	highestSubJetCSV = myjet.subjet_softdrop_csv()[s];
+      }
+    }
+    myjet.highestSubJetCSV = highestSubJetCSV;
     //Match to puppi jet
     float dRmin = 99.;
     if(m_jetAK8Puppi.pt->size() < 1) throw SError( SError::SkipEvent);
@@ -303,6 +315,7 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
       myjet.puppi_tau1        = mypuppijet.tau1();
       myjet.puppi_tau2        = mypuppijet.tau2();
       myjet.puppi_tau3        = mypuppijet.tau3();
+
     }
     if(! FoundNoLeptonOverlap(goodElectrons,goodMuons,myjet.tlv(), 1.0 ) ) continue;
     goodFatJets.push_back(myjet);
@@ -384,6 +397,8 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   m_o_tau3            = goodFatJets[0].puppi_tau3;
   m_o_csv             = goodFatJets[0].csv();
   m_o_tau21           = goodFatJets[0].puppi_tau2/goodFatJets[0].puppi_tau1;
+  m_o_tau32           = goodFatJets[0].puppi_tau3/goodFatJets[0].puppi_tau2;
+  m_o_highestSubJetCSV           = goodFatJets[0].highestSubJetCSV;
   m_o_pt              = goodFatJets[0].tlv().Pt();
   m_o_eta             = goodFatJets[0].tlv().Eta();
   m_o_lep_pt          = leptonCand_.Pt()   ;
@@ -493,6 +508,8 @@ void VVanalysis::clearBranches() {
   m_o_tau1                      = -99;
   m_o_tau2                      = -99;
   m_o_tau21                     = -99;
+  m_o_tau32                     = -99;
+  m_o_highestSubJetCSV                     = -99;
   m_o_lep_pt                    = -99;
   m_o_Wlep_pt                   = -99;
   m_o_lep_eta                   = -99;
