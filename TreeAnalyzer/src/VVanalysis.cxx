@@ -151,46 +151,47 @@ void VVanalysis::BeginInputData( const SInputData& id ) throw( SError ) { //call
   
 
   // Declare output variables:
-  DeclareVariable( b_lumi                   , "lumi"  );
-  DeclareVariable( b_event                  , "evt"  );
-  DeclareVariable( b_run                    , "run"  );
-  DeclareVariable( b_weight                 , "weight"  );
-  DeclareVariable( b_weightGen              , "genWeight");
-  DeclareVariable( b_weightPU               , "puWeight");
-  DeclareVariable( b_xSec                   , "xsec");
-  DeclareVariable( m_o_nJ                   , "njj");
-  DeclareVariable( m_o_mpuppisoftdrop       , "Whadr_softDrop_mass");
-  DeclareVariable( m_o_mgensoftdrop         , "Whadr_gen_softDrop_mass");
-  DeclareVariable( m_o_tau1                 , "Whadr_tau1");  
-  DeclareVariable( m_o_tau2                 , "Whadr_tau2");  
-  DeclareVariable( m_o_tau2                 , "Whadr_tau3");  
-  DeclareVariable( m_o_tau21                , "Whadr_tau21");
-  DeclareVariable( m_o_tau32                , "Whadr_tau32"); 
-  DeclareVariable( m_o_highestSubJetCSV     , "Whadr_highestSubJetCSV"); 
-  DeclareVariable( m_o_pt                   , "Whadr_pt");
-  DeclareVariable( m_o_eta                  , "Whadr_eta");
-  DeclareVariable( m_o_genpt                , "Whadr_gen_pt");
-  DeclareVariable( m_o_csv                  , "Whadr_csv");
-  DeclareVariable( m_o_lep_pt               , "lep_pt");
-  DeclareVariable( m_o_Wlep_pt              , "Wlep_pt");
-  DeclareVariable( m_o_lep_eta              , "lep_eta");
-  DeclareVariable( m_o_lep_phi              , "lep_phi");
+  DeclareVariable( b_lumi                           , "lumi"  );
+  DeclareVariable( b_event                          , "evt"  );
+  DeclareVariable( b_run                            , "run"  );
+  DeclareVariable( b_weight                         , "weight"  );
+  DeclareVariable( b_weightGen                      , "genWeight");
+  DeclareVariable( b_weightPU                       , "puWeight");
+  DeclareVariable( b_xSec                           , "xsec");
+  DeclareVariable( m_o_nJ                           , "njj");
+  DeclareVariable( m_o_mpuppisoftdrop               , "jetAK8_softDrop_mass");
+  DeclareVariable( m_o_mpuppisoftdrop_unCorr        , "jetAK8_softDrop_mass_unCorr");
+  DeclareVariable( m_o_mgensoftdrop                 , "jetAK8_gen_softDrop_mass");
+  DeclareVariable( m_o_tau1                         , "jetAK8_tau1");  
+  DeclareVariable( m_o_tau2                         , "jetAK8_tau2");  
+  DeclareVariable( m_o_tau2                         , "jetAK8_tau3");  
+  DeclareVariable( m_o_tau21                        , "jetAK8_tau21");
+  DeclareVariable( m_o_tau32                        , "jetAK8_tau32"); 
+  DeclareVariable( m_o_highestSubJetCSV             , "jetAK8_highestSubJetCSV"); 
+  DeclareVariable( m_o_pt                           , "jetAK8_pt");
+  DeclareVariable( m_o_eta                          , "jetAK8_eta");
+  DeclareVariable( m_o_genpt                        , "jetAK8_gen_pt");
+  DeclareVariable( m_o_csv                          , "jetAK8_csv");
+  DeclareVariable( m_o_lep_pt                       , "lep_pt");
+  DeclareVariable( m_o_Wlep_pt                      , "Wlep_pt");
+  DeclareVariable( m_o_lep_eta                      , "lep_eta");
+  DeclareVariable( m_o_lep_phi                      , "lep_phi");
   
-  DeclareVariable( Flag_goodVertices              , "Flag_goodVertices");
-  DeclareVariable( Flag_globalTightHalo2016Filter , "Flag_CSCTightHaloFilter");
-  DeclareVariable( Flag_HBHENoiseFilter           , "Flag_HBHENoiseFilter");
-  DeclareVariable( Flag_HBHENoiseIsoFilter        , "Flag_HBHENoiseIsoFilter");
-  DeclareVariable( Flag_eeBadScFilter             , "Flag_eeBadScFilter");
-  DeclareVariable( Flag_badChargedHadronFilter    , "Flag_badChargedHadronFilter");
-  DeclareVariable( Flag_badMuonFilter             , "Flag_badMuonFilter");
-  DeclareVariable( Flag_ECALDeadCell              , "Flag_ECALDeadCell");
-  DeclareVariable( HLTMu50           , "HLTMu50");
-  DeclareVariable( HLTMu45_eta2p1            , "HLTMu45_eta2p1");
-  DeclareVariable( HLTEle105_CaloIdVT_GsfTrkIdT       , "HLTEle105_CaloIdVT_GsfTrkIdT");
-  DeclareVariable( HLTEle115_CaloIdVT_GsfTrkIdT       , "HLTEle115_CaloIdVT_GsfTrkIdT");
-  DeclareVariable( HLT_all                         , "HLT_all");
-  DeclareVariable( m_o_nLeptons           , "nOtherLeptons");
-  DeclareVariable( mergedVTruth                , "mergedVTruth");
+  DeclareVariable( Flag_goodVertices                , "Flag_goodVertices");
+  DeclareVariable( Flag_globalTightHalo2016Filter   , "Flag_CSCTightHaloFilter");
+  DeclareVariable( Flag_HBHENoiseFilter             , "Flag_HBHENoiseFilter");
+  DeclareVariable( Flag_HBHENoiseIsoFilter          , "Flag_HBHENoiseIsoFilter");
+  DeclareVariable( Flag_eeBadScFilter               , "Flag_eeBadScFilter");
+  DeclareVariable( Flag_badChargedHadronFilter      , "Flag_badChargedHadronFilter");
+  DeclareVariable( Flag_badMuonFilter               , "Flag_badMuonFilter");
+  DeclareVariable( Flag_ECALDeadCell                , "Flag_ECALDeadCell");
+  DeclareVariable( HLTMu50                          , "HLTMu50");
+  DeclareVariable( HLTMu45_eta2p1                   , "HLTMu45_eta2p1");
+  DeclareVariable( HLTEle105_CaloIdVT_GsfTrkIdT     , "HLTEle105_CaloIdVT_GsfTrkIdT");
+  DeclareVariable( HLTEle115_CaloIdVT_GsfTrkIdT     , "HLTEle115_CaloIdVT_GsfTrkIdT");
+  DeclareVariable( HLT_all                          , "HLT_all");
+  DeclareVariable( m_o_nLeptons                     , "nOtherLeptons");
+  DeclareVariable( mergedVTruth                     , "mergedVTruth");
 
   // // Declare the output histograms:
   // Book( TH1F( "Mhist"     , "Mjj", 100, 0.0, 3000. ) );
@@ -279,7 +280,6 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
     else if (m_Channel.find("mu")!= std::string::npos && (HLTMu50 or HLTMu45_eta2p1 )   )                                isfired = true;
   }
   if (m_isData && !isfired)  throw SError( SError::SkipEvent );
-  std::cout << "Passed triggers" << std::endl;
   // Apply filters to data
   bool isgood = false;
   if(m_eventInfo.PV_filter && m_eventInfo.passFilter_CSCHalo && m_eventInfo.passFilter_HBHELoose && m_eventInfo.passFilter_HBHEIso && m_eventInfo.passFilter_chargedHadronTrackResolution && m_eventInfo.passFilter_muonBadTrack && m_eventInfo.passFilter_ECALDeadCell) isgood=true;
@@ -353,10 +353,11 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
       if (samePuppiJet) continue;
       puppiMatch.push_back(ii);
       dRmin = dR;   
-      myjet.puppi_softdropmass= ApplyPuppiSoftdropMassCorrections(mypuppijet,m_puppisd_corr,m_isData);//mypuppijet.softdrop_mass();
-      myjet.puppi_tau1        = mypuppijet.tau1();
-      myjet.puppi_tau2        = mypuppijet.tau2();
-      myjet.puppi_tau3        = mypuppijet.tau3();
+      myjet.puppi_softdropmass_uncorr = mypuppijet.softdrop_mass();
+      myjet.puppi_softdropmass        = ApplyPuppiSoftdropMassCorrections(mypuppijet,m_puppisd_corr,m_isData);//mypuppijet.softdrop_mass();
+      myjet.puppi_tau1                = mypuppijet.tau1();
+      myjet.puppi_tau2                = mypuppijet.tau2();
+      myjet.puppi_tau3                = mypuppijet.tau3();
     }
 
     if(! FoundNoLeptonOverlap(goodElectrons,goodMuons,myjet.tlv(), 1.0 ) ) continue;
@@ -431,22 +432,23 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   
 
   // Fill tree
-  m_o_Wlep_pt         = (p4nu+leptonCand_).Pt()   ;
-  m_o_nLeptons        = goodElectrons.size()+goodMuons.size();
-  m_o_nJ              = goodFatJets.size();
-  m_o_mpuppisoftdrop  = goodFatJets[0].puppi_softdropmass;
-  m_o_tau1            = goodFatJets[0].puppi_tau1;
-  m_o_tau2            = goodFatJets[0].puppi_tau2;
-  m_o_tau3            = goodFatJets[0].puppi_tau3;
-  m_o_csv             = goodFatJets[0].csv();
-  m_o_tau21           = goodFatJets[0].puppi_tau2/goodFatJets[0].puppi_tau1;
-  m_o_tau32           = goodFatJets[0].puppi_tau3/goodFatJets[0].puppi_tau2;
-  m_o_highestSubJetCSV           = goodFatJets[0].highestSubJetCSV;
-  m_o_pt              = goodFatJets[0].tlv().Pt();
-  m_o_eta             = goodFatJets[0].tlv().Eta();
-  m_o_lep_pt          = leptonCand_.Pt()   ;
-  m_o_lep_eta         = leptonCand_.Eta()   ;
-  m_o_lep_phi         = leptonCand_.Phi()   ;
+  m_o_Wlep_pt                 = (p4nu+leptonCand_).Pt()   ;
+  m_o_nLeptons                = goodElectrons.size()+goodMuons.size();
+  m_o_nJ                      = goodFatJets.size();
+  m_o_mpuppisoftdrop          = goodFatJets[0].puppi_softdropmass;
+  m_o_mpuppisoftdrop_unCorr   = goodFatJets[0].puppi_softdropmass_uncorr;
+  m_o_tau1                    = goodFatJets[0].puppi_tau1;
+  m_o_tau2                    = goodFatJets[0].puppi_tau2;
+  m_o_tau3                    = goodFatJets[0].puppi_tau3;
+  m_o_csv                     = goodFatJets[0].csv();
+  m_o_tau21                   = goodFatJets[0].puppi_tau2/goodFatJets[0].puppi_tau1;
+  m_o_tau32                   = goodFatJets[0].puppi_tau3/goodFatJets[0].puppi_tau2;
+  m_o_highestSubJetCSV        = goodFatJets[0].highestSubJetCSV;
+  m_o_pt                      = goodFatJets[0].tlv().Pt();
+  m_o_eta                     = goodFatJets[0].tlv().Eta();
+  m_o_lep_pt                  = leptonCand_.Pt()   ;
+  m_o_lep_eta                 = leptonCand_.Eta()   ;
+  m_o_lep_phi                 = leptonCand_.Phi()   ;
  
   
   

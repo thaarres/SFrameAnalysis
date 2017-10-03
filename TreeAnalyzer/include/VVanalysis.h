@@ -118,6 +118,7 @@ private:
   
   // The output variables
   float     m_o_mpuppisoftdrop  ; 
+  float     m_o_mpuppisoftdrop_unCorr  ; 
   float     m_o_mgensoftdrop    ; 
   float     m_o_tau1            ; 
   float     m_o_tau2            ; 
