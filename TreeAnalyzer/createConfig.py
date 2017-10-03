@@ -32,7 +32,7 @@ def waitForBatchJobs(runningJobs, listOfJobs, userName):
 
 def createJobs(i,filelist, outfolder, outname,channel='el',isData='false'):
 	template=open("config/submitJobs.xml", 'r').read()
-	template=template.replace('OUTPUT', ('<Cycle Name="VVanalysis" OutputDirectory="%s/" PostFix="" TargetLumi="1.0">')%outfolder)
+	template=template.replace('OUTPUT', ('<Cycle Name="VVanalysis" OutputDirectory="%s/" PostFix="_%s" TargetLumi="1.0">')%(outfolder,channel))
 	template=template.replace('INPUTHEADER', ('<InputData Lumi="0.0" NEventsMax="-1" NEventsSkip="0" Type="%s" Version="%s">')%(outname,i) )
 
         files = ""
@@ -53,7 +53,7 @@ def createJobs(i,filelist, outfolder, outname,channel='el',isData='false'):
 	cmd = 'sframe_main '+xml +'\n'
 	print cmd
 	jobs.write(cmd)
-	return outfolder+'/VVanalysis.'+outname+'.'+str(i)+'.root'
+	return outfolder+'/VVanalysis.'+outname+'.'+str(i)+'_'+channel+'.root'
 
 def submitJobs(jobList, outfolder):
     print 'Reading joblist'
