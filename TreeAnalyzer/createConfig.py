@@ -28,12 +28,13 @@ def waitForBatchJobs(runningJobs, listOfJobs, userName):
         print "waiting for %d job(s) in the queue" %(len(runningJobs))
 		
 
-def createJobs(i,f, outfolder, outname,channel='el'):
+def createJobs(i,f, outfolder, outname,channel='el',isData='false'):
 	template=open("config/submitJobs.xml", 'r').read()
 	template=template.replace('OUTPUT', ('<Cycle Name="VVanalysis" OutputDirectory="%s/" PostFix="" TargetLumi="1.0">')%outfolder)
 	template=template.replace('INPUTHEADER', ('<InputData Lumi="0.0" NEventsMax="-1" NEventsSkip="0" Type="%s" Version="%s">')%(outname,i) )
 	template=template.replace('INFILE', ('<In FileName="dcap://t3se01.psi.ch:22125/%s" Lumi="1.0" />')%f)
 	template=template.replace('CHANNEL', ('<Item Name="Channel" Value="%s" />')%channel)
+	template=template.replace('ISDATA', ('<Item Name="IsData" Value="%s"/>')%isData)
 	try: os.stat("xmls") 
 	except: os.mkdir("xmls")
 	xml = "xmls/"+outname+""+str(i)+".xml"
@@ -59,19 +60,28 @@ def submitJobs(jobList, outfolder):
 
 
 if __name__ == "__main__":
-	
-    print "Pass argument. For signal : QstarToQW/QstarToQZ  , for background: QCD_Pt_"
+  
+    print "Pass 2 arguments. First: Wjets, TT, ST, VV, SingleMu, SingleEl, Second: el, mu"
     channel = sys.argv[2]
     pattern = ""
+    sample = sys.argv[1] 
     if   sys.argv[1].find("QCDpt")!=-1: pattern= "QCD_Pt_"
     elif sys.argv[1].find("QCDht")!=-1: pattern= "QCD_HT"
     elif sys.argv[1].find("QCDherwig")!=-1: pattern= "QCD_Pt-15to7000"
     elif sys.argv[1].find("TTpythia")!=-1: pattern= "TT_TuneCUETP8M2T4_13TeV-powheg-pythia8"
+    elif sys.argv[1].find("TT")!=-1: pattern= "TT_TuneCUETP8M2T4_13TeV-powheg-pythia8"
+    elif sys.argv[1].find("Wjets")!=-1: pattern= "WJetsToLNu_HT_"
+    elif sys.argv[1].find("VV")!=-1: pattern= "{WW_,WZ_,ZZ_}"
+    elif sys.argv[1].find("ST")!=-1: pattern= "ST_"
+    elif sys.argv[1].find("SingleMu")!=-1: pattern= "SingleMuon"
+    elif sys.argv[1].find("SingleEl")!=-1: pattern= "SingleElectron"
+
     else:
-    	print "Please pass either: QCDpt/ht/herwig og TTpythia"
+    	print "Please pass either: Wjets, TT, ST, VV, SingleMu, SingleEl"
     	sys.exit()
 	
 
+    
     outfolder = "Output"
 
     try: os.stat(outfolder) 
@@ -80,17 +90,29 @@ if __name__ == "__main__":
     try: os.stat(outfolder+'/logs') 
     except: os.mkdir(outfolder+'/logs')
    
+    location = '/pnfs/psi.ch/cms/trivcat/store/t3groups/uniz-higgs/Summer16/Ntuple_80_20170206/'
+    isData = 'false'
+    if 'SingleMu' in sample or 'SingleEl' in sample:
+      print 'Running data, I will pick muon channel for SingleMu dataset etc.'
+      location = '/pnfs/psi.ch/cms/trivcat/store/t3groups/uniz-higgs/Moriond17/'
+      if 'SingleMu' in sample:
+        channel = 'mu'
+        isData = 'true'
+      if 'SingleEl' in sample:
+        channel = 'el'
+        isData = 'true'
+
 #    pattern = "/pnfs/psi.ch/cms/trivcat/store/t3groups/uniz-higgs/Summer16/Ntuple_80_20170203/QstarToQW_M-2500_TuneCUETP8M2T4_13TeV-pythia8/QstarToQW_M-2500_TuneCUETP8M2T4_13TeV-pythia820170203_signal/170203_131617/0000/flatTuple_1.root"
     if pattern.find("TT_TuneCUETP8M2T4_13TeV-powheg-pythia8")!=-1: filelist = glob.glob('/pnfs/psi.ch/cms/trivcat/store/t3groups/uniz-higgs/Summer16/Ntuple_80_20170206/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/*/*/*.root')
-    else: filelist = glob.glob('/pnfs/psi.ch/cms/trivcat/store/t3groups/uniz-higgs/Summer16/Ntuple_80_20170206/'+pattern+'*/*/*/*/*.root')
-    jobList = 'joblist.txt'
+    else: filelist = glob.glob(location+'/'+pattern+'*/*/*/*/*.root')
+    jobList = 'joblist_'+pattern+'_'+channel+'.txt'
     jobs = open(jobList, 'w')
     outs = []
     for i,f in enumerate(filelist):
 		print f
 		outname = f.split("/")[10]
 		print outname
-		fout = createJobs(i,f, outfolder, outname,channel)
+		fout = createJobs(i,f, outfolder, outname,channel,isData)
 		outs.append(fout)
     print outs
 	
