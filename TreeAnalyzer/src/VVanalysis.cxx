@@ -135,7 +135,7 @@ void VVanalysis::BeginInputFile( const SInputData& ) throw( SError ) { //For eac
   // Get cross section
   b_xSec                        = 1.;
   TString infile = TString(this->GetHistInputFile()->GetName());
-  b_xSec  = m_xSec.getLumiWeight( infile ); 
+  if (!m_isData) b_xSec  = m_xSec.getLumiWeight( infile ); 
   m_logger << INFO << "Cross section set to " << b_xSec << " for file " << infile <<  SLogger::endmsg;
   if( b_xSec < 0.) throw SError( SError::SkipFile );
 
@@ -263,15 +263,57 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   // Only take generated hadronic events
   // if( m_isSignal && !SignalIsHad( m_genParticle, m_Channel)) throw SError( SError::SkipEvent);
 
+  // Apply trigger to data
+  int HLT_Mu50_                     = 0;     
+  int HLT_Mu45_eta2p1_              = 0;     
+  int HLT_Ele105_CaloIdVT_GsfTrkIdT_= 0;
+  int HLT_Ele115_CaloIdVT_GsfTrkIdT_= 0;
+    
+  bool isfired = false;
+  for( std::map<std::string,bool>::iterator it = (m_eventInfo.trigDecision)->begin(); it != (m_eventInfo.trigDecision)->end(); ++it){
+    if( (it->first).find("HLT_Mu50_v")                          != std::string::npos)  HLT_Mu50_                       = it->second;
+    if( (it->first).find("HLT_Mu45_eta2p1_v")                   != std::string::npos)  HLT_Mu45_eta2p1_                = it->second;
+    if( (it->first).find("HLT_Ele105_CaloIdVT_GsfTrkIdT_v")     != std::string::npos)  HLT_Ele105_CaloIdVT_GsfTrkIdT_  = it->second;
+    if( (it->first).find("HLT_Ele115_CaloIdVT_GsfTrkIdT_v")     != std::string::npos)  HLT_Ele115_CaloIdVT_GsfTrkIdT_  = it->second;
+    if      (m_Channel.find("el")!= std::string::npos && (HLTEle105_CaloIdVT_GsfTrkIdT or HLTEle115_CaloIdVT_GsfTrkIdT)) isfired = true;
+    else if (m_Channel.find("mu")!= std::string::npos && (HLTMu50 or HLTMu45_eta2p1 )   )                                isfired = true;
+  }
+  if (m_isData && !isfired)  throw SError( SError::SkipEvent );
+  std::cout << "Passed triggers" << std::endl;
+  // Apply filters to data
+  bool isgood = false;
+  if(m_eventInfo.PV_filter && m_eventInfo.passFilter_CSCHalo && m_eventInfo.passFilter_HBHELoose && m_eventInfo.passFilter_HBHEIso && m_eventInfo.passFilter_chargedHadronTrackResolution && m_eventInfo.passFilter_muonBadTrack && m_eventInfo.passFilter_ECALDeadCell) isgood=true;
+  if (m_isData && !isgood)  throw SError( SError::SkipEvent );
+
+  b_lumi                          = m_eventInfo.lumiBlock;
+  b_event                         = m_eventInfo.eventNumber;
+  b_run                           = m_eventInfo.runNumber;
+  Flag_goodVertices               = m_eventInfo.PV_filter;
+  Flag_globalTightHalo2016Filter  = m_eventInfo.passFilter_CSCHalo;
+  Flag_HBHENoiseFilter            = m_eventInfo.passFilter_HBHELoose;
+  Flag_HBHENoiseIsoFilter         = m_eventInfo.passFilter_HBHEIso;
+  Flag_eeBadScFilter              = m_eventInfo.passFilter_EEBadSc; // not used
+  Flag_badChargedHadronFilter     = m_eventInfo.passFilter_chargedHadronTrackResolution;
+  Flag_badMuonFilter              = m_eventInfo.passFilter_muonBadTrack;
+  Flag_ECALDeadCell               = m_eventInfo.passFilter_ECALDeadCell;
+  
+  HLTMu50                       = HLT_Mu50_                     ;
+  HLTMu45_eta2p1                = HLT_Mu45_eta2p1_              ;
+  HLTEle105_CaloIdVT_GsfTrkIdT  = HLT_Ele105_CaloIdVT_GsfTrkIdT_;
+  HLTEle115_CaloIdVT_GsfTrkIdT  = HLT_Ele115_CaloIdVT_GsfTrkIdT_;
+  HLT_all                       = isfired;
+
+
   ++m_allEvents;
   ( *m_test )[ 0 ]++;
   if( m_jetAK8.N < 1 ) throw SError( SError::SkipEvent );
+
   //-------------Find lepton-------------//
   // electrons: HEEP - pt>120 GeV - |η| <1.442 or 1.56<|η| <2.5
   // muons: HighPt ID - pt>53 GeV - |η| <2.1 - relIso03<0.1
   std::vector<UZH::Electron> goodElectrons = FindGoodLeptons(m_electron);
   std::vector<UZH::Muon>     goodMuons     = FindGoodLeptons(m_muon);
-  
+
   if( (m_Channel.find("el")!= std::string::npos && goodElectrons.size()<1) || (m_Channel.find("mu")!= std::string::npos && goodMuons.size()<1) ) throw SError( SError::SkipEvent);
   ++m_foundLepton;
   ( *m_test )[ 1 ]++;
@@ -292,7 +334,7 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
     for ( int s = 0; s < (myjet.subjet_softdrop_N()); ++s ) {
       //std::cout<<"subjet csv"<<myjet.subjet_softdrop_csv()[s]<<std::endl;
       if (myjet.subjet_softdrop_csv()[s] > highestSubJetCSV){
-	highestSubJetCSV = myjet.subjet_softdrop_csv()[s];
+        highestSubJetCSV = myjet.subjet_softdrop_csv()[s];
       }
     }
 
@@ -347,7 +389,7 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   //-------------Find AK4-------------//
   // ak04: Loose ID - pt>30 GeV - |η| <2.4 - ΔR(lepton)>0.3 - ΔR(ak08)>0.8
   std::vector<UZH::Jet> goodJetsAK4 = FindGoodJetsAK4(m_jetAK4,goodElectrons,goodMuons,goodFatJets[0].tlv());
-   if(goodJetsAK4.size()<1) throw SError( SError::SkipEvent );
+  if(goodJetsAK4.size()<1) throw SError( SError::SkipEvent );
   ++m_passedAK4;
   ( *m_test )[ 3 ]++;
 
@@ -363,11 +405,11 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   if (!foundMet) throw SError( SError::SkipEvent);
   ++m_passedMET;
   ( *m_test )[ 4 ]++;
-//
-//
-//
-//   //-------------Find leptonic W-------------//
-//   //sum of lepton passing selections and met,pt>200 GeV
+  //
+  //
+  //
+  //   //-------------Find leptonic W-------------//
+  //   //sum of lepton passing selections and met,pt>200 GeV
   TLorentzVector leptonCand_;
 
   if      (m_Channel.find("el")!= std::string::npos)  leptonCand_ = goodElectrons[0].tlv();
@@ -377,11 +419,11 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
     throw SError( SError::SkipEvent);
   }
 
- TLorentzVector p4nu = NuMomentum( leptonCand_.Px(), leptonCand_.Py(), leptonCand_.Pz(), leptonCand_.Pt(), leptonCand_.E(), goodMet.corrPx(), goodMet.corrPy() );
+  TLorentzVector p4nu = NuMomentum( leptonCand_.Px(), leptonCand_.Py(), leptonCand_.Pz(), leptonCand_.Pt(), leptonCand_.E(), goodMet.corrPx(), goodMet.corrPy() );
 
- if( (p4nu+leptonCand_).Pt() < 200. ) throw SError( SError::SkipEvent);
+  if( (p4nu+leptonCand_).Pt() < 200. ) throw SError( SError::SkipEvent);
   
-// Double_t WmassLep    = TMath::Sqrt( 2*METCand_.at(0).p4.Pt()*leptonCand_.at(0).p4.Pt()*(1-cos(leptonCand_.at(0).p4.DeltaPhi(METCand_.at(0).p4))));
+  // Double_t WmassLep    = TMath::Sqrt( 2*METCand_.at(0).p4.Pt()*leptonCand_.at(0).p4.Pt()*(1-cos(leptonCand_.at(0).p4.DeltaPhi(METCand_.at(0).p4))));
 
 
   ++m_passedEvents;
@@ -408,37 +450,13 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
  
   
   
-  bool isfired = false;
-  for( std::map<std::string,bool>::iterator it = (m_eventInfo.trigDecision)->begin(); it != (m_eventInfo.trigDecision)->end(); ++it){
-    if( (it->first).find("HLT_Mu50_v")                          != std::string::npos) HLTMu50 = it->second;
-    if( (it->first).find("HLT_Mu45_eta2p1_v")                   != std::string::npos) HLTMu45_eta2p1 = it->second;
-    if( (it->first).find("HLT_Ele105_CaloIdVT_GsfTrkIdT_v")     != std::string::npos) HLTEle105_CaloIdVT_GsfTrkIdT  = it->second;
-    if( (it->first).find("HLT_Ele115_CaloIdVT_GsfTrkIdT_v")     != std::string::npos) HLTEle115_CaloIdVT_GsfTrkIdT  = it->second;
-    if      (m_Channel.find("el")!= std::string::npos && (HLTEle105_CaloIdVT_GsfTrkIdT or HLTEle115_CaloIdVT_GsfTrkIdT)) isfired = true;
-    else if (m_Channel.find("mu")!= std::string::npos && (HLTMu50 or HLTMu45_eta2p1 )   )                                isfired = true;
-  }
-  
-  b_lumi                          = m_eventInfo.lumiBlock;
-  b_event                         = m_eventInfo.eventNumber;
-  b_run                           = m_eventInfo.runNumber;
-  Flag_goodVertices               = m_eventInfo.PV_filter;
-  Flag_globalTightHalo2016Filter  = m_eventInfo.passFilter_CSCHalo;
-  Flag_HBHENoiseFilter            = m_eventInfo.passFilter_HBHELoose;
-  Flag_HBHENoiseIsoFilter         = m_eventInfo.passFilter_HBHEIso;
-  Flag_eeBadScFilter              = m_eventInfo.passFilter_EEBadSc;
-  Flag_badChargedHadronFilter     = m_eventInfo.passFilter_chargedHadronTrackResolution;
-  Flag_badMuonFilter              = m_eventInfo.passFilter_muonBadTrack;
-  Flag_ECALDeadCell               = m_eventInfo.passFilter_ECALDeadCell;
-  HLT_all                          = isfired;
-  
 
   if(!m_isData){
     m_o_mgensoftdrop          = goodGenJets[0].softdropmass();
     m_o_genpt                 = goodGenJets[0].tlv().Pt();
+    std::vector<UZH::GenParticle> GenQuarks  = FindGeneratedQuarks(m_genParticle, m_isData);
+    mergedVTruth                =  isMergedVJet(goodFatJets[0].tlv(),GenQuarks) ;
   }
-  
-  std::vector<UZH::GenParticle> GenQuarks  = FindGeneratedQuarks(m_genParticle, m_isData);
-  mergedVTruth                =  isMergedVJet(goodFatJets[0].tlv(),GenQuarks) ;
   //
 
    
