@@ -30,13 +30,17 @@ def waitForBatchJobs(runningJobs, listOfJobs, userName):
         print "waiting for %d job(s) in the queue" %(len(runningJobs))
 		
 
-def createJobs(i,f, outfolder, outname,channel='el',isData='false'):
+def createJobs(i,filelist, outfolder, outname,channel='el',isData='false'):
 	template=open("config/submitJobs.xml", 'r').read()
 	template=template.replace('OUTPUT', ('<Cycle Name="VVanalysis" OutputDirectory="%s/" PostFix="" TargetLumi="1.0">')%outfolder)
 	template=template.replace('INPUTHEADER', ('<InputData Lumi="0.0" NEventsMax="-1" NEventsSkip="0" Type="%s" Version="%s">')%(outname,i) )
 
-        
-	template=template.replace('INFILE', ('<In FileName="dcap://t3se01.psi.ch:22125/%s" Lumi="1.0" />')%f)
+        files = ""
+        for f in filelist:
+          files = files + ('<In FileName="dcap://t3se01.psi.ch:22125/%s" Lumi="1.0" />  \n')%f
+
+        print files
+        template=template.replace('INFILE', ('%s')%files)
 	template=template.replace('CHANNEL', ('<Item Name="Channel" Value="%s" />')%channel)
 	template=template.replace('ISDATA', ('<Item Name="IsData" Value="%s"/>')%isData)
 	try: os.stat("xmls") 
@@ -126,15 +130,19 @@ if __name__ == "__main__":
     jobLists = []
     print patterns
     for pattern in patterns:
-      filelist = glob.glob(location+'/'+pattern+'*/*/*/*/*.root')
+      filelists = glob.glob(location+'/'+pattern+'*/*/*/*/*.root')
       jobList = 'joblist_'+pattern+'_'+channel+'.txt'
       jobs = open(jobList, 'w')
       outs = []
-      for i,f in enumerate(filelist):
-        print f
-        outname = f.split("/")[10]
+
+      filelists = list(split_seq(filelists,10))
+      
+
+      for i,filelist in enumerate(filelists):
+        print filelist
+        outname = filelist[0].split("/")[10]
         print outname
-        fout = createJobs(i,f, outfolder, outname,channel,isData)
+        fout = createJobs(i,filelist, outfolder, outname,channel,isData)
         outs.append(fout)
       print outs
 	
