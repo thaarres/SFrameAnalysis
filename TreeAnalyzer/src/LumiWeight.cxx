@@ -48,11 +48,13 @@ double LumiWeight::getLumiWeight( TString sample ){
   if (sample.Contains("WJetsToLNu_HT-1200To2500"              ) ) return 1.33*1.21    ;//SF
   if (sample.Contains("WJetsToLNu_HT-2500ToInf"               ) ) return 0.03089*1.21 ;//SF
   if (sample.Contains("WW_TuneCUETP8M1"                       ) ) return 118.7        ;//SF
-  if (sample.Contains("WZ_TuneCUETP8M1"                       ) ) return 16.5         ;//SF
-  if (sample.Contains("ZZ_TuneCUETP8M1"                       ) ) return 47.13        ;//SF
-  if (sample.Contains("ST_s-channel_4f_leptonDecays"          ) ) return 47.13        ;//SF
+  if (sample.Contains("WZ_TuneCUETP8M1"                       ) ) return 47.13         ;//SF
+  if (sample.Contains("ZZ_TuneCUETP8M1"                       ) ) return 16.5        ;//SF
+  if (sample.Contains("ST_s-channel_4f_leptonDecays"          ) ) return 11.36*0.3272 ;//SF
   if (sample.Contains("ST_t-channel_top_4f_leptonDecays"      ) ) return 136.02*0.322 ;//SF
   if (sample.Contains("ST_t-channel_antitop_4f_leptonDecays"  ) ) return 80.95*0.322  ;//SF
+  if (sample.Contains("ST_t-channel_antitop_4f_inclusiveDecays") ) return 136.02      ;//SF
+  if (sample.Contains("ST_t-channel_top_4f_inclusiveDecays"   ) ) return 80.95        ;//SF
   if (sample.Contains("ST_tW_antitop_5f_inclusiveDecays"      ) ) return 35.6         ;//SF
   if (sample.Contains("ST_tW_top_5f_inclusiveDecays_"         ) ) return 35.6         ;//SF
   
