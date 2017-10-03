@@ -16,7 +16,7 @@
 	<OutputTree Name="tree" />
 </InputData>
 <UserConfig>
-	<Item Name="IsData" Value="false"/>
+        ISDATA
 	CHANNEL
 	<Item Name="RecoTreeName" Value="tree"/>
 </UserConfig>
