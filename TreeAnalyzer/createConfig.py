@@ -135,7 +135,7 @@ if __name__ == "__main__":
       jobs = open(jobList, 'w')
       outs = []
 
-      filelists = list(split_seq(filelists,10))
+      filelists = list(split_seq(filelists,20))
       
 
       for i,filelist in enumerate(filelists):
@@ -156,14 +156,14 @@ if __name__ == "__main__":
 
     submit = raw_input("Do you also want to submit the jobs to the batch system? [y/n] ")
     if submit == 'y' or submit=='Y':
-
+  
       for jobList in jobLists:
         lock=thread.allocate_lock()
         lock.acquire()
         print 'Reading joblist'
         jobListName = jobList
         print jobList
-        subCmd = 'qsub -t 1-%s -o %s/logs/ psibatch_runner.sh %s' %(i,outfolder,jobListName)
+        subCmd = 'qsub -t 1-%s -o %s/logs/ psibatch_runner.sh %s' %(mapcount(jobList),outfolder,jobListName)
         print 'Going to submit jobs with', subCmd
 	    	
         subProcess=subprocess.Popen( subCmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
@@ -180,8 +180,8 @@ if __name__ == "__main__":
           #         print "mergeCmd is %s " %mergeCmd
             
             
-      else:
-        print "Not submitting jobs"
+    else:
+      print "Not submitting jobs"
 
 
     
