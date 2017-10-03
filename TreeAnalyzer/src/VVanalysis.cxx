@@ -166,7 +166,7 @@ void VVanalysis::BeginInputData( const SInputData& id ) throw( SError ) { //call
   DeclareVariable( m_o_tau2                 , "Whadr_tau3");  
   DeclareVariable( m_o_tau21                , "Whadr_tau21");
   DeclareVariable( m_o_tau32                , "Whadr_tau32"); 
-  DeclareVariable( m_o_highestSubJetCSV                , "Whadr_highestSubJetCSV"); 
+  DeclareVariable( m_o_highestSubJetCSV     , "Whadr_highestSubJetCSV"); 
   DeclareVariable( m_o_pt                   , "Whadr_pt");
   DeclareVariable( m_o_eta                  , "Whadr_eta");
   DeclareVariable( m_o_genpt                , "Whadr_gen_pt");
@@ -295,7 +295,7 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
 	highestSubJetCSV = myjet.subjet_softdrop_csv()[s];
       }
     }
-    myjet.highestSubJetCSV = highestSubJetCSV;
+
     //Match to puppi jet
     float dRmin = 99.;
     if(m_jetAK8Puppi.pt->size() < 1) throw SError( SError::SkipEvent);
@@ -315,9 +315,10 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
       myjet.puppi_tau1        = mypuppijet.tau1();
       myjet.puppi_tau2        = mypuppijet.tau2();
       myjet.puppi_tau3        = mypuppijet.tau3();
-
     }
+
     if(! FoundNoLeptonOverlap(goodElectrons,goodMuons,myjet.tlv(), 1.0 ) ) continue;
+    myjet.highestSubJetCSV = highestSubJetCSV;
     goodFatJets.push_back(myjet);
   }
   if(goodFatJets.size()<1) throw SError( SError::SkipEvent );
