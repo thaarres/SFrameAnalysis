@@ -176,6 +176,11 @@ void VVanalysis::BeginInputData( const SInputData& id ) throw( SError ) { //call
   DeclareVariable( m_o_Wlep_pt                      , "Wlep_pt");
   DeclareVariable( m_o_lep_eta                      , "lep_eta");
   DeclareVariable( m_o_lep_phi                      , "lep_phi");
+  DeclareVariable( m_o_met                          , "MET");
+  DeclareVariable( m_o_dphi_jetlep                  , "dphi_ak8Lep");
+  DeclareVariable( m_o_dphi_jetet                   , "dphi_ak8Et");
+  DeclareVariable( m_o_dphi_jetwlep                 , "dphi_ak8Wlep");
+  DeclareVariable( m_o_dphi_bjetlep                 , "dphi_bjetlep");
   
   DeclareVariable( Flag_goodVertices                , "Flag_goodVertices");
   DeclareVariable( Flag_globalTightHalo2016Filter   , "Flag_CSCTightHaloFilter");
@@ -251,8 +256,8 @@ void VVanalysis::EndMasterInputData( const SInputData& ) throw( SError ){ //this
 
 void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError ) { //This is the main analysis function that is called for each event. It receives the weight of the event, as it is calculated by the framework from the luminosities and generator cuts defined in the XML configuration.
   
-  // float gW = (m_eventInfo.genEventWeight < 0) ? -1 : 1;
-  float gW = m_eventInfo.genEventWeight;  //needed for Herwig
+  float gW = (m_eventInfo.genEventWeight < 0) ? -1 : 1;
+  // float gW = m_eventInfo.genEventWeight;  //needed for Herwig
   nSumGenWeights += gW;
   Hist( "genEvents" )->Fill(gW);
   
@@ -424,6 +429,13 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
 
   if( (p4nu+leptonCand_).Pt() < 200. ) throw SError( SError::SkipEvent);
   
+//Angulare selections
+  // if ( leptonCand_.tlv() .DeltaR(goodFatJets[0].tlv() ) < 3.1415/2) throw SError( SError::SkipEvent);
+  // if ( p4nu.tlv()        .DeltaR(goodFatJets[0].tlv() ) < 2) throw SError( SError::SkipEvent);
+  // if ( (p4nu+leptonCand_).DeltaR(goodFatJets[0].tlv() ) < 2) throw SError( SError::SkipEvent);
+  
+
+  
   // Double_t WmassLep    = TMath::Sqrt( 2*METCand_.at(0).p4.Pt()*leptonCand_.at(0).p4.Pt()*(1-cos(leptonCand_.at(0).p4.DeltaPhi(METCand_.at(0).p4))));
 
 
@@ -446,9 +458,15 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   m_o_highestSubJetCSV        = goodFatJets[0].highestSubJetCSV;
   m_o_pt                      = goodFatJets[0].tlv().Pt();
   m_o_eta                     = goodFatJets[0].tlv().Eta();
-  m_o_lep_pt                  = leptonCand_.Pt()   ;
+  m_o_lep_pt                  = leptonCand_.Pt()    ;
   m_o_lep_eta                 = leptonCand_.Eta()   ;
   m_o_lep_phi                 = leptonCand_.Phi()   ;
+  m_o_met                     = goodMet.et()        ;
+  m_o_dphi_jetlep  = leptonCand_.DeltaPhi(goodFatJets[0].tlv());
+  m_o_dphi_jetet   = p4nu.DeltaPhi(goodFatJets[0].tlv());
+  m_o_dphi_jetwlep = (p4nu+leptonCand_).DeltaPhi(goodFatJets[0].tlv());
+  m_o_dphi_bjetlep = leptonCand_.DeltaPhi(goodJetsAK4[0].tlv());
+  
  
   
   
@@ -525,16 +543,18 @@ void VVanalysis::clearBranches() {
   b_weightPU                    = 1.;
   b_weightBtag                  = 1.;
   m_o_mpuppisoftdrop            = -99;
+  m_o_mpuppisoftdrop_unCorr     = -99;
   m_o_mgensoftdrop              = -99;
   m_o_tau1                      = -99;
   m_o_tau2                      = -99;
   m_o_tau21                     = -99;
   m_o_tau32                     = -99;
-  m_o_highestSubJetCSV                     = -99;
+  m_o_highestSubJetCSV          = -99;
   m_o_lep_pt                    = -99;
   m_o_Wlep_pt                   = -99;
   m_o_lep_eta                   = -99;
   m_o_lep_phi                   = -99;
+  m_o_met                       = -99;
   
   Flag_goodVertices             = -99;
   Flag_globalTightHalo2016Filter= -99;
