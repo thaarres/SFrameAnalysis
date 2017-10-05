@@ -174,10 +174,11 @@ void VVanalysis::BeginInputData( const SInputData& id ) throw( SError ) { //call
   DeclareVariable( m_o_csv                          , "jetAK8_csv");
   DeclareVariable( m_o_lep_pt                       , "lep_pt");
   DeclareVariable( m_o_Wlep_pt                      , "Wlep_pt");
+  DeclareVariable( m_o_Wlep_pt2                     , "Wlep_pt_2");
   DeclareVariable( m_o_lep_eta                      , "lep_eta");
   DeclareVariable( m_o_lep_phi                      , "lep_phi");
   DeclareVariable( m_o_met                          , "MET");
-  DeclareVariable( m_o_dphi_jetlep                  , "dphi_ak8Lep");
+  DeclareVariable( m_o_dr_jetlep                    , "dr_ak8Lep");
   DeclareVariable( m_o_dphi_jetet                   , "dphi_ak8Et");
   DeclareVariable( m_o_dphi_jetwlep                 , "dphi_ak8Wlep");
   DeclareVariable( m_o_dphi_bjetlep                 , "dphi_bjetlep");
@@ -198,8 +199,8 @@ void VVanalysis::BeginInputData( const SInputData& id ) throw( SError ) { //call
   DeclareVariable( m_o_nLeptons                     , "nOtherLeptons");
   DeclareVariable( mergedVTruth                     , "mergedVTruth");
 
-  // // Declare the output histograms:
-  // Book( TH1F( "Mhist"     , "Mjj", 100, 0.0, 3000. ) );
+  // Declare the output histograms:
+  TH1* Cutflow = Book( TH1F( "Cutflow", "Cutflow", 6, 0., 6. ) );
   
  
   m_test->resize( 6, 0 ); // Reserve six entries in vector for counting entries:
@@ -237,12 +238,18 @@ void VVanalysis::BeginMasterInputData( const SInputData& ) throw( SError ){
 }
 
 void VVanalysis::EndMasterInputData( const SInputData& ) throw( SError ){ //this is a good place to print some summaries, do some final calculations on the created histograms (for instance fitting them), etc
-    
+  
+  Hist("Cutflow")->Fill(0.,( *m_test )[ 0 ] );
+  Hist("Cutflow")->Fill(1, ( *m_test )[ 1 ] );
+  Hist("Cutflow")->Fill(2, ( *m_test )[ 2 ] );
+  Hist("Cutflow")->Fill(3, ( *m_test )[ 3 ] );
+  Hist("Cutflow")->Fill(4, ( *m_test )[ 4 ] );
+  Hist("Cutflow")->Fill(5, ( *m_test )[ 5 ] );
   m_logger << INFO << "Number of all processed events      :  "<< *m_allEvents   << "   " << ( m_test->size() > 0 ? ( *m_test )[ 0 ] : 0 )<< SLogger::endmsg;
   m_logger << INFO << "Number of events passing lepton req.:  "<< *m_foundLepton << "   " << ( m_test->size() > 1 ? ( *m_test )[ 1 ] : 0 )<< SLogger::endmsg;
   m_logger << INFO << "Found AK8 PUPPI jet                 :  "<< *m_passedPuppi << "   " << ( m_test->size() > 2 ? ( *m_test )[ 2 ] : 0 )<< SLogger::endmsg;
-  m_logger << INFO << "Found at least one b-tagged AK4     :  "<< *m_passedAK4  << "   " << ( m_test->size() > 4 ? ( *m_test )[ 4 ] : 0 )<< SLogger::endmsg;
-  m_logger << INFO << "Number of events passing MET cut    :  "<< *m_passedMET   << "   " << ( m_test->size() > 3 ? ( *m_test )[ 3 ] : 0 )<< SLogger::endmsg;
+  m_logger << INFO << "Found at least one b-tagged AK4     :  "<< *m_passedAK4  << "   " << ( m_test->size()  > 3 ? ( *m_test )[ 3 ] : 0 )<< SLogger::endmsg;
+  m_logger << INFO << "Number of events passing MET cut    :  "<< *m_passedMET   << "   " << ( m_test->size() > 4 ? ( *m_test )[ 4 ] : 0 )<< SLogger::endmsg;
   m_logger << INFO << "Number of events passing selection  :  "<< *m_passedEvents<< "   " << ( m_test->size() > 5 ? ( *m_test )[ 5 ] : 0 )<< SLogger::endmsg;
   
   m_logger << INFO << "Number of generated Events (weighted) : "<< nSumGenWeights << SLogger::endmsg;
@@ -407,8 +414,12 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   if (m_Channel.find("el")!= std::string::npos) m_metCut==80.0;
   bool foundMet=false;
   UZH::MissingEt goodMet( &m_missingEt, 0 );
+  
+    
   if (goodMet.et() > m_metCut) foundMet=true;
   if (!foundMet) throw SError( SError::SkipEvent);
+  TLorentzVector MET_tlv;
+  MET_tlv.SetPtEtaPhiE(goodMet.et(), 0., goodMet.phi(), goodMet.et());
   ++m_passedMET;
   ( *m_test )[ 4 ]++;
   //
@@ -427,7 +438,7 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
 
   TLorentzVector p4nu = NuMomentum( leptonCand_.Px(), leptonCand_.Py(), leptonCand_.Pz(), leptonCand_.Pt(), leptonCand_.E(), goodMet.corrPx(), goodMet.corrPy() );
 
-  if( (p4nu+leptonCand_).Pt() < 200. ) throw SError( SError::SkipEvent);
+  // if( (p4nu+leptonCand_).Pt() < 200. ) throw SError( SError::SkipEvent);
   
 //Angulare selections
   // if ( leptonCand_.tlv() .DeltaR(goodFatJets[0].tlv() ) < 3.1415/2) throw SError( SError::SkipEvent);
@@ -445,6 +456,7 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
 
   // Fill tree
   m_o_Wlep_pt                 = (p4nu+leptonCand_).Pt()   ;
+  m_o_Wlep_pt2                = goodMet.et()+leptonCand_.Pt()   ;
   m_o_nLeptons                = goodElectrons.size()+goodMuons.size();
   m_o_nJ                      = goodFatJets.size();
   m_o_mpuppisoftdrop          = goodFatJets[0].puppi_softdropmass;
@@ -462,8 +474,8 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   m_o_lep_eta                 = leptonCand_.Eta()   ;
   m_o_lep_phi                 = leptonCand_.Phi()   ;
   m_o_met                     = goodMet.et()        ;
-  m_o_dphi_jetlep  = leptonCand_.DeltaPhi(goodFatJets[0].tlv());
-  m_o_dphi_jetet   = p4nu.DeltaPhi(goodFatJets[0].tlv());
+  m_o_dr_jetlep    = leptonCand_.DeltaR(goodFatJets[0].tlv());
+  m_o_dphi_jetet   = MET_tlv.DeltaPhi(goodFatJets[0].tlv());
   m_o_dphi_jetwlep = (p4nu+leptonCand_).DeltaPhi(goodFatJets[0].tlv());
   m_o_dphi_bjetlep = leptonCand_.DeltaPhi(goodJetsAK4[0].tlv());
   

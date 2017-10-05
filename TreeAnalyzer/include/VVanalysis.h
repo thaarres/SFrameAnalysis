@@ -133,11 +133,12 @@ private:
   int       m_o_nJ                    ;
   int       m_o_nLeptons              ;
   float     m_o_Wlep_pt               ;
+  float     m_o_Wlep_pt2               ;
   float     m_o_lep_pt                ;
   float     m_o_lep_eta               ;
   float     m_o_lep_phi               ;
   float     m_o_met                   ;
-  float     m_o_dphi_jetlep           ; 
+  float     m_o_dr_jetlep             ; 
   float     m_o_dphi_jetet            ; 
   float     m_o_dphi_jetwlep          ; 
   float     m_o_dphi_bjetlep          ; 
