@@ -87,6 +87,35 @@ std::vector<UZH::Muon> FindGoodLeptons(Ntuple::MuonNtupleObject m_muons){
     return goodMu;
 }
 
+bool NoVetoLeptons(Ntuple::MuonNtupleObject m_muons, float goodMuPt){
+    std::vector<UZH::Muon> vetoMu;
+    for(int i=0;i< m_muons.N;i++)
+    {
+        UZH::Muon mu(&m_muons,i);
+        if( mu.pt() <= 20.) continue;
+        if( fabs( mu.eta() ) >= 2.1 ) continue;
+        if( ! mu.isHighPtMuon()  ) continue; // //isHighPtMuon
+        if( goodMuPt == mu.pt() ) continue;
+        vetoMu.push_back(mu);
+    }
+    if (vetoMu.size()>0) return false;
+    return true;
+}
+bool NoVetoLeptons(Ntuple::ElectronNtupleObject m_electrons, float goodElePt){
+    std::vector<UZH::Electron> vetoEle;
+    for(int i=0;i< m_electrons.N;i++)
+    {    
+        UZH::Electron ele(&m_electrons,i);
+        if( ! ele.isHeepElectron()  ) continue;
+        if( ele.pt() <= 35.) continue;
+       if ( ele.pt() == goodElePt ) continue;
+        vetoEle.push_back(ele);
+    }
+    if (vetoEle.size()>0) return false;
+    return true;
+}
+
+
 std::vector<UZH::Jet> FindGoodJetsAK4(Ntuple::JetNtupleObject m_jetAK4, std::vector<UZH::Electron> goodElectrons, std::vector<UZH::Muon> goodMuons, TLorentzVector Jet){
     std::vector<UZH::Jet> goodJet;
     for(int i=0;i< m_jetAK4.N;i++)
@@ -178,13 +207,10 @@ void PrintEvent(std::vector<UZH::Jet> jets  )
 }
 
 TLorentzVector NuMomentum( float leptonPx, float leptonPy, float leptonPz, float leptonPt, float leptonE, float metPx, float metPy ){
-
   double  mW = 80.399;
 
   TLorentzVector result;
-
   //  double Wmt = sqrt(pow(Lepton.et()+MET.pt(),2) - pow(Lepton.px()+metPx,2) - pow(leptonPy+metPy,2) );
-
   double MisET2 = (metPx * metPx + metPy * metPy);
   double mu = (mW * mW) / 2 + metPx * leptonPx + metPy * leptonPy;
   double a  = (mu * leptonPz) / (leptonE * leptonE - leptonPz * leptonPz);

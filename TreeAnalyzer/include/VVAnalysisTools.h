@@ -14,6 +14,9 @@ bool FoundNoLeptonOverlap(std::vector<UZH::Electron> goodEle, std::vector<UZH::M
 
 std::vector<UZH::Electron> FindGoodLeptons(Ntuple::ElectronNtupleObject m_electrons);
 std::vector<UZH::Muon> FindGoodLeptons(Ntuple::MuonNtupleObject m_muons);
+bool NoVetoLeptons(Ntuple::ElectronNtupleObject m_electrons, float goodElePt);
+bool NoVetoLeptons(Ntuple::MuonNtupleObject m_muons,float goodMuPt);
+
 std::vector<UZH::Jet>  FindGoodJetsAK4(Ntuple::JetNtupleObject m_jetAK4,std::vector<UZH::Electron> goodElectrons,std::vector<UZH::Muon> goodMuons,TLorentzVector Jet);
 
 bool SignalIsHad( Ntuple::GenParticleNtupleObject data_ , std::string m_Channel);

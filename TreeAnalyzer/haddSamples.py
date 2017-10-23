@@ -16,6 +16,7 @@ if __name__ == "__main__":
     for f in files:
         #print f.split('.')
         sample = f.split('.')[1]
+        if folder.find("reweighted")!=-1:  sample = f.split('/')[5].split('_')[0]
         samples.append(sample)
 
         
@@ -30,4 +31,8 @@ if __name__ == "__main__":
         cmd = "hadd -f " + outfolder + "/" + sample + ".root " + folder + "/*" + sample + "*" 
         print cmd
         os.system(cmd)
-        
+    
+    if folder.find("reweighted")!=-1:     
+        cmd = "hadd -f " + outfolder + "/VV.root " + outfolder + "/WW* " + outfolder + "/WZ* " + outfolder + "/ZZ* "
+        print cmd
+        os.system(cmd)

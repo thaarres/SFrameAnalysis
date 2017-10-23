@@ -29,6 +29,7 @@ VVanalysis::VVanalysis()
    , m_xSec                 ()
    , m_allEvents( "allEvents", this )
    , m_foundLepton( "passedLoose", this )
+   , m_foundVetoLepton( "passedVeto", this )
    , m_passedPuppi( "passedPuppi", this )
    , m_passedAK4( "passedDeta", this )
    , m_passedMET( "passedMjj", this )
@@ -101,22 +102,21 @@ void VVanalysis::BeginInputFile( const SInputData& ) throw( SError ) { //For eac
     m_jetAK8      .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::JetBasic|Ntuple::JetAnalysis|Ntuple::JetSubstructure|Ntuple::JetSoftdropSubjets, (m_jetAK8Name + "_").c_str() );
     m_jetAK4      .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::JetBasic|Ntuple::JetAnalysis|Ntuple::JetTruth, (m_jetAK4Name + "_").c_str() );
     m_eventInfo   .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::EventInfoBasic|Ntuple::EventInfoTrigger|Ntuple::EventInfoMETFilters, "" );
-    m_jetAK4      .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::JetBasic|Ntuple::JetAnalysis|Ntuple::JetTruth, (m_jetAK4Name + "_").c_str() );
     m_electron    .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::ElectronBasic|Ntuple::ElectronID, (m_electronName + "_").c_str() );
     m_muon        .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::MuonBasic|Ntuple::MuonID|Ntuple::MuonIsolation, (m_muonName + "_").c_str() );
-    m_missingEt    .ConnectVariables( m_recoTreeName.c_str(), Ntuple::MissingEtBasic, (m_missingEtName + "_").c_str() );
+    m_missingEt    .ConnectVariables( m_recoTreeName.c_str(), Ntuple::MissingEtBasic|Ntuple::MissingEtAnalysis, (m_missingEtName + "_").c_str() );
   
   }
   else {
     m_jetAK8Puppi .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::JetBasic|Ntuple::JetSubstructure, (m_jetAK8PuppiName + "_").c_str() );
     m_jetAK8      .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::JetBasic|Ntuple::JetAnalysis|Ntuple::JetSubstructure|Ntuple::JetTruth|Ntuple::JetSoftdropSubjets|Ntuple::JetSoftdropSubjetsTruth, (m_jetAK8Name + "_").c_str() );
-    m_jetAK4      .ConnectVariables(       m_recoTreeName.c_str(), Ntuple::JetBasic|Ntuple::JetAnalysis|Ntuple::JetTruth, (m_jetAK4Name + "_").c_str() );
+    m_jetAK4      .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::JetBasic|Ntuple::JetAnalysis|Ntuple::JetTruth, (m_jetAK4Name + "_").c_str() );
     m_eventInfo   .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::EventInfoBasic|Ntuple::EventInfoTrigger|Ntuple::EventInfoMETFilters|Ntuple::EventInfoTruth, "" );
     m_genParticle .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::GenParticleBasic, (m_genParticleName + "_").c_str() );
     m_genjetAK8   .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::GenJet, (m_genjetAK8Name + "_").c_str() );
     m_electron    .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::ElectronBasic|Ntuple::ElectronID|Ntuple::ElectronSuperCluster, (m_electronName + "_").c_str() );
     m_muon        .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::MuonBasic|Ntuple::MuonID|Ntuple::MuonIsolation, (m_muonName + "_").c_str() );
-    m_missingEt   .ConnectVariables(    m_recoTreeName.c_str(), Ntuple::MissingEtBasic, (m_missingEtName + "_").c_str() );
+    m_missingEt   .ConnectVariables(  m_recoTreeName.c_str(), Ntuple::MissingEtBasic|Ntuple::MissingEtAnalysis, (m_missingEtName + "_").c_str() );
   }
   // Unused collections
   // m_jetAK4.ConnectVariables(       m_recoTreeName.c_str(), Ntuple::JetBasic|Ntuple::JetAnalysis|Ntuple::JetTruth, (m_jetAK4Name + "_").c_str() );
@@ -200,10 +200,10 @@ void VVanalysis::BeginInputData( const SInputData& id ) throw( SError ) { //call
   DeclareVariable( mergedVTruth                     , "mergedVTruth");
 
   // Declare the output histograms:
-  TH1* Cutflow = Book( TH1F( "Cutflow", "Cutflow", 6, 0., 6. ) );
+  TH1* Cutflow = Book( TH1F( "Cutflow", "Cutflow", 7, 0., 7. ) );
   
  
-  m_test->resize( 6, 0 ); // Reserve six entries in vector for counting entries:
+  m_test->resize( 7, 0 ); // Reserve six entries in vector for counting entries:
   TH1* genEvents = Book(TH1F("genEvents", "number of generated Events",2,0,2));
               
    return;
@@ -245,12 +245,19 @@ void VVanalysis::EndMasterInputData( const SInputData& ) throw( SError ){ //this
   Hist("Cutflow")->Fill(3, ( *m_test )[ 3 ] );
   Hist("Cutflow")->Fill(4, ( *m_test )[ 4 ] );
   Hist("Cutflow")->Fill(5, ( *m_test )[ 5 ] );
+  Hist("Cutflow")->Fill(6, ( *m_test )[ 6 ] );
+
+  const Int_t nx = 7;
+  const char *tbins[nx] = {"All","1 Lep","Lep Veto","1 AK8","b-tag","MET","W_{lep}>200"};
+  for (int i=1;i<=nx;i++) Hist("Cutflow")->GetXaxis()->SetBinLabel(i,tbins[i-1]);     
+  
   m_logger << INFO << "Number of all processed events      :  "<< *m_allEvents   << "   " << ( m_test->size() > 0 ? ( *m_test )[ 0 ] : 0 )<< SLogger::endmsg;
   m_logger << INFO << "Number of events passing lepton req.:  "<< *m_foundLepton << "   " << ( m_test->size() > 1 ? ( *m_test )[ 1 ] : 0 )<< SLogger::endmsg;
-  m_logger << INFO << "Found AK8 PUPPI jet                 :  "<< *m_passedPuppi << "   " << ( m_test->size() > 2 ? ( *m_test )[ 2 ] : 0 )<< SLogger::endmsg;
-  m_logger << INFO << "Found at least one b-tagged AK4     :  "<< *m_passedAK4  << "   " << ( m_test->size()  > 3 ? ( *m_test )[ 3 ] : 0 )<< SLogger::endmsg;
-  m_logger << INFO << "Number of events passing MET cut    :  "<< *m_passedMET   << "   " << ( m_test->size() > 4 ? ( *m_test )[ 4 ] : 0 )<< SLogger::endmsg;
-  m_logger << INFO << "Number of events passing selection  :  "<< *m_passedEvents<< "   " << ( m_test->size() > 5 ? ( *m_test )[ 5 ] : 0 )<< SLogger::endmsg;
+  m_logger << INFO << "Number of events passing lepton veto:  "<< *m_foundLepton << "   " << ( m_test->size() > 2 ? ( *m_test )[ 2 ] : 0 )<< SLogger::endmsg;
+  m_logger << INFO << "Found AK8 PUPPI jet                 :  "<< *m_passedPuppi << "   " << ( m_test->size() > 3 ? ( *m_test )[ 3 ] : 0 )<< SLogger::endmsg;
+  m_logger << INFO << "Found at least one b-tagged AK4     :  "<< *m_passedAK4  << "   " << ( m_test->size()  > 4 ? ( *m_test )[ 4 ] : 0 )<< SLogger::endmsg;
+  m_logger << INFO << "Number of events passing MET cut    :  "<< *m_passedMET   << "   " << ( m_test->size() > 5 ? ( *m_test )[ 5 ] : 0 )<< SLogger::endmsg;
+  m_logger << INFO << "Number of events passing Wlep > 200 :  "<< *m_passedEvents<< "   " << ( m_test->size() > 6 ? ( *m_test )[ 6 ] : 0 )<< SLogger::endmsg;
   
   m_logger << INFO << "Number of generated Events (weighted) : "<< nSumGenWeights << SLogger::endmsg;
   
@@ -327,8 +334,24 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   std::vector<UZH::Muon>     goodMuons     = FindGoodLeptons(m_muon);
 
   if( (m_Channel.find("el")!= std::string::npos && goodElectrons.size()<1) || (m_Channel.find("mu")!= std::string::npos && goodMuons.size()<1) ) throw SError( SError::SkipEvent);
+  if( (m_Channel.find("el")!= std::string::npos && goodMuons.size()>0) || (m_Channel.find("mu")!= std::string::npos && goodElectrons.size()>0) ) throw SError( SError::SkipEvent);
   ++m_foundLepton;
   ( *m_test )[ 1 ]++;
+  
+  //-------------Find veto lepton-------------//
+  // electrons: HEEP  - pt>35 GeV 
+  // muons: HighPt ID - pt>20 GeV
+
+  bool noVetoElectrons = true;
+  bool noVetoMuons     = true;
+  if ( goodElectrons.size()>0 ) noVetoElectrons = NoVetoLeptons(m_electron,goodElectrons[0].pt());
+  if ( goodMuons.size()>0)      noVetoMuons     = NoVetoLeptons(m_muon,goodMuons[0].pt());
+  if ( !noVetoElectrons || !noVetoMuons ) throw SError( SError::SkipEvent);
+  ++m_foundVetoLepton;
+  ( *m_test )[ 2 ]++;
+  
+
+
   //-------------Find good AK8-------------//
   // ak08: Loose ID - pt>100 GeV - |η| <2.4 - ΔR(lepton)>1
   std::vector<UZH::Jet> goodFatJets;
@@ -377,11 +400,12 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
     goodFatJets.push_back(myjet);
   }
   if(goodFatJets.size()<1) throw SError( SError::SkipEvent );
+  
   //-------------Make sure we have a PUPPI match-------------// 
   if( goodFatJets[0].puppi_softdropmass == -99  || goodFatJets[0].puppi_tau1 == -99 || goodFatJets[0].puppi_tau2 == -99) throw SError( SError::SkipEvent );
   ++m_passedPuppi;
-  ( *m_test )[ 2 ]++;
- 
+  ( *m_test )[ 3 ]++;
+
   //Match to gen jet
   if(!m_isData){
     for( unsigned int i=0; i < goodFatJets.size(); ++i){
@@ -404,56 +428,49 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   std::vector<UZH::Jet> goodJetsAK4 = FindGoodJetsAK4(m_jetAK4,goodElectrons,goodMuons,goodFatJets[0].tlv());
   if(goodJetsAK4.size()<1) throw SError( SError::SkipEvent );
   ++m_passedAK4;
-  ( *m_test )[ 3 ]++;
-
-  
-  //-------------Find MET-------------//
-  // electron events: met>80 GeV
-  // muon events: met>40 GeV
-  float m_metCut = 40.0;
-  if (m_Channel.find("el")!= std::string::npos) m_metCut==80.0;
-  bool foundMet=false;
-  UZH::MissingEt goodMet( &m_missingEt, 0 );
-  
-    
-  if (goodMet.et() > m_metCut) foundMet=true;
-  if (!foundMet) throw SError( SError::SkipEvent);
-  TLorentzVector MET_tlv;
-  MET_tlv.SetPtEtaPhiE(goodMet.et(), 0., goodMet.phi(), goodMet.et());
-  ++m_passedMET;
   ( *m_test )[ 4 ]++;
-  //
-  //
-  //
-  //   //-------------Find leptonic W-------------//
-  //   //sum of lepton passing selections and met,pt>200 GeV
-  TLorentzVector leptonCand_;
 
-  if      (m_Channel.find("el")!= std::string::npos)  leptonCand_ = goodElectrons[0].tlv();
-  else if (m_Channel.find("mu")!= std::string::npos)  leptonCand_ = goodMuons[0].tlv();
-  else{
-    std::cout<< "Channel not defined!! Please type in Channel==mu or Channel=el "<< std::endl;
-    throw SError( SError::SkipEvent);
-  }
 
+
+  
+//-------------Find MET-------------//
+// electron events: met>80 GeV
+// muon events: met>40 GeV
+float m_metCut = 40.0;
+if (m_Channel.find("el")!= std::string::npos) m_metCut==80.0;
+bool foundMet=false;
+UZH::MissingEt goodMet( &m_missingEt, 0 );
+
+if (goodMet.et() > m_metCut) foundMet=true;
+if (!foundMet) throw SError( SError::SkipEvent);
+++m_passedMET;
+( *m_test )[ 5 ]++;
+ 
+//   //-------------Find leptonic W-------------//
+//   //sum of lepton passing selections and met,pt>200 GeV
+TLorentzVector leptonCand_;
+if      (m_Channel.find("el")!= std::string::npos){  
+  leptonCand_ = goodElectrons[0].tlv();
+}
+else if (m_Channel.find("mu")!= std::string::npos){
+   leptonCand_ = goodMuons[0].tlv();
+} 
+else{
+  std::cout<< "Channel not defined!! Please type in Channel==mu or Channel=el "<< std::endl;
+  throw SError( SError::SkipEvent);
+}
   TLorentzVector p4nu = NuMomentum( leptonCand_.Px(), leptonCand_.Py(), leptonCand_.Pz(), leptonCand_.Pt(), leptonCand_.E(), goodMet.corrPx(), goodMet.corrPy() );
 
-  // if( (p4nu+leptonCand_).Pt() < 200. ) throw SError( SError::SkipEvent);
-  
-//Angulare selections
-  // if ( leptonCand_.tlv() .DeltaR(goodFatJets[0].tlv() ) < 3.1415/2) throw SError( SError::SkipEvent);
-  // if ( p4nu.tlv()        .DeltaR(goodFatJets[0].tlv() ) < 2) throw SError( SError::SkipEvent);
-  // if ( (p4nu+leptonCand_).DeltaR(goodFatJets[0].tlv() ) < 2) throw SError( SError::SkipEvent);
-  
 
-  
   // Double_t WmassLep    = TMath::Sqrt( 2*METCand_.at(0).p4.Pt()*leptonCand_.at(0).p4.Pt()*(1-cos(leptonCand_.at(0).p4.DeltaPhi(METCand_.at(0).p4))));
 
-
+  // if( (p4nu+leptonCand_).Pt() < 200. ) throw SError( SError::SkipEvent);
   ++m_passedEvents;
-  ( *m_test )[ 5 ]++;
+  ( *m_test )[ 6 ]++;
   
-
+  TLorentzVector MET_tlv;
+  MET_tlv.SetPtEtaPhiE(goodMet.et(), 0., goodMet.phi(), goodMet.et());
+  
   // Fill tree
   m_o_Wlep_pt                 = (p4nu+leptonCand_).Pt()   ;
   m_o_Wlep_pt2                = goodMet.et()+leptonCand_.Pt()   ;
@@ -474,10 +491,10 @@ void VVanalysis::ExecuteEvent( const SInputData&, Double_t weight) throw( SError
   m_o_lep_eta                 = leptonCand_.Eta()   ;
   m_o_lep_phi                 = leptonCand_.Phi()   ;
   m_o_met                     = goodMet.et()        ;
-  m_o_dr_jetlep    = leptonCand_.DeltaR(goodFatJets[0].tlv());
-  m_o_dphi_jetet   = MET_tlv.DeltaPhi(goodFatJets[0].tlv());
-  m_o_dphi_jetwlep = (p4nu+leptonCand_).DeltaPhi(goodFatJets[0].tlv());
-  m_o_dphi_bjetlep = leptonCand_.DeltaPhi(goodJetsAK4[0].tlv());
+  m_o_dr_jetlep               = leptonCand_.DeltaR(goodFatJets[0].tlv());
+  m_o_dphi_jetet              = MET_tlv.DeltaPhi(goodFatJets[0].tlv());
+  m_o_dphi_jetwlep            = (p4nu+leptonCand_).DeltaPhi(goodFatJets[0].tlv());
+  m_o_dphi_bjetlep            = leptonCand_.DeltaPhi(goodJetsAK4[0].tlv());
   
  
   

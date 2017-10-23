@@ -87,7 +87,7 @@ def mapcount(filename):
 
 if __name__ == "__main__":
   
-    print "Pass 2 arguments. First: Wjets, TT, ST, VV, SingleMu, SingleEl, Second: el, mu"
+    print "Pass 2 arguments. First: Wjets, TT, ST, VV, QCD,SingleMu, SingleEl, Second: el, mu"
     channel = sys.argv[2]
     patterns = []
     sample = sys.argv[1] 
@@ -96,11 +96,13 @@ if __name__ == "__main__":
     elif sample.find("Wjets")!=-1: patterns = ["WJetsToLNu_HT-100To200","WJetsToLNu_HT-200To400","WJetsToLNu_HT-400To600","WJetsToLNu_HT-600To800","WJetsToLNu_HT-800To1200","WJetsToLNu_HT-1200To2500","WJetsToLNu_HT-2500ToInf"]
     elif sample.find("VV")!=-1: patterns = ["WW_TuneCUETP8M1","WZ_TuneCUETP8M1","ZZ_TuneCUETP8M1"]
     elif sample.find("ST")!=-1: patterns = ["ST_s-channel_4f_leptonDecays","ST_t-channel_antitop_4f_inclusiveDecays","ST_t-channel_top_4f_inclusiveDecays","ST_tW_antitop_5f_inclusiveDecays","ST_tW_top_5f_inclusiveDecays"]
+    elif sample.find("QCD")!=-1: patterns= ["QCD_HT"]
     elif sample.find("SingleMu")!=-1: patterns= ["SingleMuon"]
     elif sample.find("SingleEl")!=-1: patterns= ["SingleElectron"]
+    
 
     else:
-    	print "Please pass either: Wjets, TT, ST, VV, SingleMu, SingleEl"
+    	print "Please pass either: Wjets, TT, ST, VV, QCD, SingleMu, SingleEl"
     	sys.exit()
 	
 
@@ -130,18 +132,21 @@ if __name__ == "__main__":
     jobLists = []
     print patterns
     for pattern in patterns:
-      filelists = glob.glob(location+'/'+pattern+'*/*/*/*/*.root')
+      # filelists = [fn for fn in glob.glob(location+'/'+pattern+'*/*/*/*/*.root')
+ #               if "_ext" not in os.path.abspath(fn)]
+      filelists = glob.glob(location+'/'+pattern+'*/*/*/*/*.root')   
+      print filelists
       jobList = 'joblist_'+pattern+'_'+channel+'.txt'
       jobs = open(jobList, 'w')
       outs = []
-
+      
       filelists = list(split_seq(filelists,20))
       
-
+      
       for i,filelist in enumerate(filelists):
-        print filelist
         outname = filelist[0].split("/")[10]
         print outname
+        
         fout = createJobs(i,filelist, outfolder, outname,channel,isData)
         outs.append(fout)
       print outs
@@ -155,6 +160,7 @@ if __name__ == "__main__":
       print "Name: ", jobList, " nJobs: ", mapcount(jobList)
 
     submit = raw_input("Do you also want to submit the jobs to the batch system? [y/n] ")
+    # submit = 'y'
     if submit == 'y' or submit=='Y':
   
       for jobList in jobLists:

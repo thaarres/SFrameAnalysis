@@ -106,6 +106,7 @@ private:
   //
   SSummedVar< Int_t > m_allEvents; //!
   SSummedVar< Int_t > m_foundLepton; //!
+  SSummedVar< Int_t > m_foundVetoLepton; //!
   SSummedVar< Int_t > m_passedPuppi; //!
   SSummedVar< Int_t > m_passedAK4; //!
   SSummedVar< Int_t > m_passedMET; //!

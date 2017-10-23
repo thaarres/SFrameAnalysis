@@ -9,8 +9,8 @@ from ROOT import TFile, TH1, TF1, TLorentzVector
 import optparse
 usage = 'usage: %prog [options]'
 parser = optparse.OptionParser(usage)
-parser.add_option('-i', '--input', action='store', type='string', dest='origin', default='./Output/')
-parser.add_option('-o', '--output', action='store', type='string', dest='target', default='./Output/reweighted')
+parser.add_option('-i', '--input', action='store', type='string', dest='origin', default='/scratch/thaarres/VTopTagSF_MiniTuple/')
+parser.add_option('-o', '--output', action='store', type='string', dest='target', default='/scratch/thaarres/VTopTagSF_MiniTuple/reweighted')
 parser.add_option('-f', '--filter', action='store', type='string', dest='filter', default='')
 parser.add_option('-s', '--single', action='store_true', dest='single', default=True)
 parser.add_option('-v', '--verbose', action='store_true', dest='verbose', default=False)

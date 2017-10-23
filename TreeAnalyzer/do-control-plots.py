@@ -2,8 +2,9 @@ import ROOT
 from tdrstyle import *
 setTDRStyle()
 from  CMS_lumi import *
-
 from time import sleep
+
+ROOT.gROOT.SetBatch(True)
 
 H_ref = 600
 W_ref = 800
@@ -23,12 +24,12 @@ if( iPos==0 ): CMS_lumi.relPosX = 0.12
 iPeriod = 4
 
 lumi = "1"
-dir = "/scratch/clseitz/VTopTagSF_MiniTuple/Samples_Oct4/reweighted/HaddedOutput/"
-
-# cutL = "1"
-# cutL = "(fabs(dphi_ak8Lep)<1.5708&&fabs(dphi_ak8Et)<2.&&fabs(dphi_ak8Wlep))"
-vars = ["jetAK8_softDrop_mass", "jetAK8_pt", "jetAK8_tau21", "MET","jetAK8_tau32", "jetAK8_highestSubJetCSV","jetAK8_csv","lep_pt","Wlep_pt","dphi_ak8Lep","dphi_ak8Et","dphi_ak8Wlep"]
-bkgs = ["ST.root","VV.root","WJetsToLNu.root","QCD.root","TT.root"]
+dir = "/scratch/thaarres/VTopTagSF_MiniTuple/reweighted//HaddedOutput/"
+cutL="1"
+# cutL = "(jetAK8_softDrop_mass>30&&jetAK8_softDrop_mass<140)"
+cutL = "(fabs(dr_ak8Lep)>1.5708&&fabs(dphi_ak8Et)>2.&&fabs(dphi_ak8Wlep)>2.&&Wlep_pt_2>200)"
+vars = ["jetAK8_softDrop_mass", "jetAK8_pt", "jetAK8_tau21", "MET","jetAK8_tau32", "jetAK8_highestSubJetCSV","jetAK8_csv","lep_pt","Wlep_pt","Wlep_pt_2","dr_ak8Lep","fabs(dphi_ak8Et)","fabs(dphi_ak8Wlep)"]
+bkgs = ["ST.root","VV.root","WJetsToLNu.root","QCD_reduced.root","TT.root"]
 data = "SingleMuon.root"
 fillcolor = [432,600,632,617,417,418]
 
@@ -59,15 +60,22 @@ def drawTH1(id,tree,var,cuts,bins,min,max,fillcolor,titlex = "",units = "",drawS
 	return h
 
 
-def doCP():
+def doCP(postfix=""):
 	for var in vars:
 		unit = "GeV"
 		minx = 0.
-		maxx = 250.
-		binsx = 50
-		if var.find("pt")!=-1:
+		maxx = 200.
+		binsx = 40
+		
+		if var.find("dr_ak8Lep")!=-1:
 			minx = 0.
-			maxx = 800.
+			maxx = 6.
+		elif var.find("jetAK8_pt")!=-1:
+			minx = 200.
+			maxx = 600.
+		elif var.find("lep_pt")!=-1:
+			minx = 50.
+			maxx = 400.
 		elif var.find("tau")!=-1 or var.find("csv")!=-1 or var.find("CSV")!=-1:
 			minx = 0.
 			maxx = 1.
@@ -75,9 +83,9 @@ def doCP():
 			binsx = 20
 		elif var.find("MET")!=-1:
 			minx = 0.
-			maxx = 800.
+			maxx = 500.
 		elif var.find("dphi")!=-1:
-			minx = -3.2
+			minx = 0.0
 			maxx = 3.2
 			unit = ""
 		name = var
@@ -128,8 +136,8 @@ def doCP():
 			hist.SetFillColor(fillcolor[i])
 			if file.GetName().find("TT")!=-1: 
 				ttint = hist.Integral()
-				# hist.Scale(0.746992414682)
-				hist.Scale(0.89305440873)
+				hist.Scale(0.750762237782)
+				# hist.Scale(0.714578847292)
 			else: totalMinoInt += hist.Integral()
 		    
 			
@@ -142,6 +150,9 @@ def doCP():
 		print "DATA/MC" ,scale/ttint
 		canvas.cd()
 		datahist.GetYaxis().SetRangeUser(0, datahist.GetMaximum()*1.6);
+		if var.find("jetAK8_pt")!=-1:
+			datahist.GetYaxis().SetRangeUser(0.1, datahist.GetMaximum()*1000);
+			canvas.SetLogy()
 		datahist.Draw("ME")
 		stack.Draw("HISTsame")
 		datahist.Draw("MEsame")
@@ -149,7 +160,7 @@ def doCP():
 		CMS_lumi(canvas, iPeriod, iPos)
 		canvas.Update()
 		
-		canvas.SaveAs(var+"_withAngCuts.png")
+		canvas.SaveAs(var.replace("fabs(","").replace(")","")+postfix+".png")
 		del files
 		del hists
 		del dataf
@@ -158,7 +169,7 @@ def doCP():
 		# ["jetAK8_softDrop_mass","jetAK8_softDrop_mass_unCorr","jetAK8_gen_softDrop_mass","jetAK8_tau1",  "jetAK8_tau2",  "jetAK8_tau3",  "jetAK8_tau21","jetAK8_tau32",
 		# "jetAK8_highestSubJetCSV", "jetAK8_pt","jetAK8_eta","jetAK8_gen_pt","jetAK8_csv","lep_pt","Wlep_pt","lep_eta","lep_phi"]
 
-def doEff(cutstring,cuttext):
+def doEff(cutstring,cuttext,postfix=""):
 	iPeriod = 0
 	unit = "GeV"
 	minx = 30.
@@ -226,7 +237,8 @@ def doEff(cutstring,cuttext):
 
 		if file.GetName().find("TT")!=-1:
 			print "TT integral already set"
-			ttint = ttINT
+			ttint = ttINT+ttumINT
+		
 		# 	hist.Scale(0.746992414682)
 		# 	hist.Scale(0.89305440873)
 		else: totalMinoInt += hist.Integral()
@@ -248,19 +260,23 @@ def doEff(cutstring,cuttext):
 	pt.AddText(cuttext)
 	pt.AddText("N_{sig} = %i"%ttint)
 	pt.AddText("N_{bg} = %i"%totalMinoInt)
-	pt.AddText("#frac{S}{B} = %.2f"%(sb))
-	pt.AddText("(w. unm. = %.2f)"%(sb2))
+	pt.AddText("#frac{S}{B} = %.2f"%(sb2))
+	pt.AddText("(w.o unmerged = %.2f)"%(sb))
 	pt.Draw("same")	
 	canvas.Update()
 	# sleep(200)
-	canvas.SaveAs("ttEff_"+cuttext.replace(" ","")+".png")
+	canvas.SaveAs("ttEff_"+cuttext.replace(" ","")+postfix+".png")
 	
 	
 if __name__ == "__main__":
-	purity = "1"
-	# doCP()
-	doEff(purity,"no cut")		
-	doEff("(fabs(dphi_ak8Lep)>1.5708&&fabs(dphi_ak8Et)>2.&&fabs(dphi_ak8Wlep)>2&&%s)"%purity,"angular cuts")	
-	doEff("MET>150&&%s"%purity,"MET 150 GeV")
-	doEff("MET>175&&%s"%purity,"MET 175 GeV")
-	doEff("MET>200&&%s"%purity,"MET 200 GeV")		
+	doCP()
+
+	purities = ["1","jetAK8_tau21>0.45","jetAK8_tau21<0.45"]
+	label    = ["_all","_LP","_HP"]
+	for i,purity in enumerate(purities):
+
+		doEff(purity,"no cut",label[i])
+		doEff("(fabs(dr_ak8Lep)>1.5708&&fabs(dphi_ak8Et)>2.&&fabs(dphi_ak8Wlep)>2&&%s)"%purity,"angular cuts",label[i])
+		doEff("MET>150&&%s"%purity,"MET 150 GeV",label[i])
+		doEff("MET>175&&%s"%purity,"MET 175 GeV",label[i])
+		doEff("MET>200&&%s"%purity,"MET 200 GeV",label[i])
