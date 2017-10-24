@@ -37,6 +37,7 @@ def createJobs(i,filelist, outfolder, outname,channel='el',isData='false'):
 
         files = ""
         for f in filelist:
+          if f.find("_ext")!=-1: continue
           files = files + ('<In FileName="dcap://t3se01.psi.ch:22125/%s" Lumi="1.0" />  \n')%f
 
         print files

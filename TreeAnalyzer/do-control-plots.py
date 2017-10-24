@@ -27,9 +27,9 @@ lumi = "1"
 dir = "/scratch/thaarres/VTopTagSF_MiniTuple/reweighted//HaddedOutput/"
 cutL="1"
 # cutL = "(jetAK8_softDrop_mass>30&&jetAK8_softDrop_mass<140)"
-cutL = "(fabs(dr_ak8Lep)>1.5708&&fabs(dphi_ak8Et)>2.&&fabs(dphi_ak8Wlep)>2.&&Wlep_pt_2>200)"
+cutL = "(fabs(dr_ak8Lep)>1.5708&&fabs(dphi_ak8Et)>2.&&fabs(dphi_ak8Wlep)>2.&&Wlep_pt>200)"
 vars = ["jetAK8_softDrop_mass", "jetAK8_pt", "jetAK8_tau21", "MET","jetAK8_tau32", "jetAK8_highestSubJetCSV","jetAK8_csv","lep_pt","Wlep_pt","Wlep_pt_2","dr_ak8Lep","fabs(dphi_ak8Et)","fabs(dphi_ak8Wlep)"]
-bkgs = ["ST.root","VV.root","WJetsToLNu.root","QCD_reduced.root","TT.root"]
+bkgs = ["ST.root","VV.root","WJetsToLNu.root","QCD.root","TT.root"]
 data = "SingleMuon.root"
 fillcolor = [432,600,632,617,417,418]
 
@@ -136,7 +136,7 @@ def doCP(postfix=""):
 			hist.SetFillColor(fillcolor[i])
 			if file.GetName().find("TT")!=-1: 
 				ttint = hist.Integral()
-				hist.Scale(0.750762237782)
+				hist.Scale(0.70)
 				# hist.Scale(0.714578847292)
 			else: totalMinoInt += hist.Integral()
 		    
@@ -276,7 +276,7 @@ if __name__ == "__main__":
 	for i,purity in enumerate(purities):
 
 		doEff(purity,"no cut",label[i])
-		doEff("(fabs(dr_ak8Lep)>1.5708&&fabs(dphi_ak8Et)>2.&&fabs(dphi_ak8Wlep)>2&&%s)"%purity,"angular cuts",label[i])
-		doEff("MET>150&&%s"%purity,"MET 150 GeV",label[i])
-		doEff("MET>175&&%s"%purity,"MET 175 GeV",label[i])
-		doEff("MET>200&&%s"%purity,"MET 200 GeV",label[i])
+		doEff("Wlep_pt>200&&(fabs(dr_ak8Lep)>1.5708&&fabs(dphi_ak8Et)>2.&&fabs(dphi_ak8Wlep)>2&&%s)"%purity,"angular cuts",label[i])
+		doEff("Wlep_pt>200&&MET>150&&%s"%purity,"MET 150 GeV",label[i])
+		doEff("Wlep_pt>200&&MET>175&&%s"%purity,"MET 175 GeV",label[i])
+		doEff("Wlep_pt>200&&MET>200&&%s"%purity,"MET 200 GeV",label[i])
