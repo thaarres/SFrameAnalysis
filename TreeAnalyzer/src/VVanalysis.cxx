@@ -198,6 +198,7 @@ void VVanalysis::BeginInputData( const SInputData& id ) throw( SError ) { //call
   DeclareVariable( HLT_all                          , "HLT_all");
   DeclareVariable( m_o_nLeptons                     , "nOtherLeptons");
   DeclareVariable( mergedVTruth                     , "mergedVTruth");
+  DeclareVariable( mergedTopTruth                     , "mergedTopTruth");
 
   // Declare the output histograms:
   TH1* Cutflow = Book( TH1F( "Cutflow", "Cutflow", 7, 0., 7. ) );
@@ -503,8 +504,10 @@ else{
   if(!m_isData){
     m_o_mgensoftdrop          = goodGenJets[0].softdropmass();
     m_o_genpt                 = goodGenJets[0].tlv().Pt();
-    std::vector<UZH::GenParticle> GenQuarks  = FindGeneratedQuarks(m_genParticle, m_isData);
+    std::vector<UZH::GenParticle> GenQuarks  = FindGeneratedQuarks(m_genParticle, m_isData, true);
+    std::vector<UZH::GenParticle> GenQuarksTop  = FindGeneratedQuarks(m_genParticle, m_isData, false);
     mergedVTruth                =  isMergedVJet(goodFatJets[0].tlv(),GenQuarks) ;
+    mergedTopTruth                =  isMergedTopJet(goodFatJets[0].tlv(),GenQuarksTop) ;
   }
   //
 

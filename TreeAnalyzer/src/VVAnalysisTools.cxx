@@ -7,6 +7,7 @@ bool isMergedVJet(TLorentzVector goodFatJet, std::vector<UZH::GenParticle> Vdeca
     for(unsigned int i=0;i< VdecayProducts.size();i++)
     {
       TLorentzVector q = VdecayProducts[i].tlv();
+      //      std::cout<<"drW "<<goodFatJet.DeltaR(q)<<" pt:"<<goodFatJet.Pt()<<std::endl;
       if (goodFatJet.DeltaR(q) < 0.8) associatedQuarks +=1;
 
     }
@@ -15,6 +16,24 @@ bool isMergedVJet(TLorentzVector goodFatJet, std::vector<UZH::GenParticle> Vdeca
 }
 
 
+bool isMergedTopJet(TLorentzVector goodFatJet, std::vector<UZH::GenParticle> TopdecayProducts) {
+    int associatedQuarks=0;
+    for(unsigned int i=0;i< TopdecayProducts.size();i++)
+    {
+      TLorentzVector q = TopdecayProducts[i].tlv();
+
+      //std::cout<<"drT "<<goodFatJet.DeltaR(q)<<" pt:"<<goodFatJet.Pt()<<std::endl;
+       if (goodFatJet.DeltaR(q) < 0.8) associatedQuarks +=1;
+
+    }
+
+    if (associatedQuarks ==3) return 1;
+    else return 0;   
+}
+
+
+
+/*Old function, lets keep it for now
 std::vector<UZH::GenParticle> FindGeneratedQuarks(Ntuple::GenParticleNtupleObject m_genParticle,bool m_isData)
 {
   std::vector<UZH::GenParticle> GenQuarks;
@@ -34,6 +53,49 @@ std::vector<UZH::GenParticle> FindGeneratedQuarks(Ntuple::GenParticleNtupleObjec
     UZH::GenParticle MyQuark( &m_genParticle, i );
     GenQuarks.push_back(MyQuark);
   }
+  return GenQuarks;    
+}
+*/
+
+ //new function, called twice, there is probably a more elegant way to do this but we will keep it for now
+ //Should leave mergedW logic unchanged
+std::vector<UZH::GenParticle> FindGeneratedQuarks(Ntuple::GenParticleNtupleObject m_genParticle,bool m_isData, bool findW)
+{
+  std::vector<UZH::GenParticle> GenQuarks;
+  for(int i=0;i< m_genParticle.N;i++)
+  {
+
+
+    bool containsV=0;
+    bool containsbFromTop=0;
+    bool containsSomething=0;
+    if(TMath::Abs(m_genParticle.pdgId->at(i)) > 6  or TMath::Abs(m_genParticle.pdgId->at(i)) <1 ) continue;
+    for(int ii=0;ii< m_genParticle.nMoth->at(i);ii++)
+      {
+	if(TMath::Abs(m_genParticle.mother->at(i).at(ii)) == 24 or TMath::Abs(m_genParticle.mother->at(i).at(ii)) == 23) containsV = 1;  
+	if(TMath::Abs(m_genParticle.mother->at(i).at(ii)) == 6 and TMath::Abs(m_genParticle.pdgId->at(i)) == 5) containsbFromTop = 1;  
+	
+      }
+    
+    containsSomething = containsV + containsbFromTop;
+
+
+    if (containsSomething){    
+
+      //    std::cout<<"something: "<<containsSomething<<" V "<<containsV<<" bFromTop:"<<containsbFromTop<<std::endl;
+  
+    if (containsV and findW){
+      UZH::GenParticle MyQuark( &m_genParticle, i );
+      GenQuarks.push_back(MyQuark);
+    }
+    if ((containsV  or containsbFromTop) and !findW){
+      UZH::GenParticle MyQuark( &m_genParticle, i );
+      GenQuarks.push_back(MyQuark);
+    }
+    }
+    else continue;
+  }
+
   return GenQuarks;    
 }
 

@@ -160,6 +160,7 @@ private:
   bool      HLT_all                        ;
   int       nLeptonOverlap                ; 
   int       mergedVTruth          ; 
+  int       mergedTopTruth          ; 
   double    b_xSec                        ;
   int       b_event                       ;
   int       b_lumi                        ;
