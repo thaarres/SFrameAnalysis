@@ -258,7 +258,8 @@ void VVanalysis::EndMasterInputData( const SInputData& ) throw( SError ){ //this
   m_logger << INFO << "Found AK8 PUPPI jet                 :  "<< *m_passedPuppi << "   " << ( m_test->size() > 3 ? ( *m_test )[ 3 ] : 0 )<< SLogger::endmsg;
   m_logger << INFO << "Found at least one b-tagged AK4     :  "<< *m_passedAK4  << "   " << ( m_test->size()  > 4 ? ( *m_test )[ 4 ] : 0 )<< SLogger::endmsg;
   m_logger << INFO << "Number of events passing MET cut    :  "<< *m_passedMET   << "   " << ( m_test->size() > 5 ? ( *m_test )[ 5 ] : 0 )<< SLogger::endmsg;
-  m_logger << INFO << "Number of events passing Wlep > 200 :  "<< *m_passedEvents<< "   " << ( m_test->size() > 6 ? ( *m_test )[ 6 ] : 0 )<< SLogger::endmsg;
+  //not applied
+  //  m_logger << INFO << "Number of events passing Wlep > 200 :  "<< *m_passedEvents<< "   " << ( m_test->size() > 6 ? ( *m_test )[ 6 ] : 0 )<< SLogger::endmsg;
   
   m_logger << INFO << "Number of generated Events (weighted) : "<< nSumGenWeights << SLogger::endmsg;
   
