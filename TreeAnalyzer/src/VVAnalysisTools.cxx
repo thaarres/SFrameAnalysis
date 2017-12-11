@@ -178,12 +178,27 @@ bool NoVetoLeptons(Ntuple::ElectronNtupleObject m_electrons, float goodElePt){
 }
 
 
+std::vector<UZH::Jet> FindGoodBJetsAK4(Ntuple::JetNtupleObject m_jetAK4, std::vector<UZH::Electron> goodElectrons, std::vector<UZH::Muon> goodMuons, TLorentzVector Jet){
+    std::vector<UZH::Jet> goodJet;
+    for(int i=0;i< m_jetAK4.N;i++)
+    {
+        UZH::Jet jet(&m_jetAK4,i);
+        if( jet.csv() <= 0.8484) continue; //CS update b-tagging WP for 2016 data
+        if( jet.pt() <= 30.) continue;
+        if( fabs( jet.eta() ) >= 2.4 ) continue;
+        if( ! jet.IDLoose()  ) continue; 
+        if( !(FoundNoLeptonOverlap(goodElectrons,goodMuons,Jet, 0.3 ) ) ) continue;
+        if(Jet.DeltaR(jet.tlv()) < 0.8) continue;  
+        goodJet.push_back(jet);
+    }
+    return goodJet;
+}
+
 std::vector<UZH::Jet> FindGoodJetsAK4(Ntuple::JetNtupleObject m_jetAK4, std::vector<UZH::Electron> goodElectrons, std::vector<UZH::Muon> goodMuons, TLorentzVector Jet){
     std::vector<UZH::Jet> goodJet;
     for(int i=0;i< m_jetAK4.N;i++)
     {
         UZH::Jet jet(&m_jetAK4,i);
-        if( jet.csv() <= 0.89) continue;
         if( jet.pt() <= 30.) continue;
         if( fabs( jet.eta() ) >= 2.4 ) continue;
         if( ! jet.IDLoose()  ) continue; 
