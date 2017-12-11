@@ -199,6 +199,7 @@ std::vector<UZH::Jet> FindGoodJetsAK4(Ntuple::JetNtupleObject m_jetAK4, std::vec
     for(int i=0;i< m_jetAK4.N;i++)
     {
         UZH::Jet jet(&m_jetAK4,i);
+        if( jet.csv() <= 0.8484) continue; //CS update b-tagging WP for 2016 data (leave in here for now)
         if( jet.pt() <= 30.) continue;
         if( fabs( jet.eta() ) >= 2.4 ) continue;
         if( ! jet.IDLoose()  ) continue; 
