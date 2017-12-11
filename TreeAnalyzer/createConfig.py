@@ -97,7 +97,15 @@ if __name__ == "__main__":
     elif sample.find("Wjets")!=-1: patterns = ["WJetsToLNu_HT-100To200","WJetsToLNu_HT-200To400","WJetsToLNu_HT-400To600","WJetsToLNu_HT-600To800","WJetsToLNu_HT-800To1200","WJetsToLNu_HT-1200To2500","WJetsToLNu_HT-2500ToInf"]
     elif sample.find("VV")!=-1: patterns = ["WW_TuneCUETP8M1","WZ_TuneCUETP8M1","ZZ_TuneCUETP8M1"]
     elif sample.find("ST")!=-1: patterns = ["ST_s-channel_4f_leptonDecays","ST_t-channel_antitop_4f_inclusiveDecays","ST_t-channel_top_4f_inclusiveDecays","ST_tW_antitop_5f_inclusiveDecays","ST_tW_top_5f_inclusiveDecays"]
-    elif sample.find("QCD")!=-1: patterns= ["QCD_HT"]
+    elif sample.find("QCD")!=-1: patterns= ["QCD_HT1000to1500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"
+                                            ,"QCD_HT1500to2000_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"
+                                            ,"QCD_HT2000toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"
+                                            ,"QCD_HT200to300_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"
+                                            ,"QCD_HT300to500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"
+                                            ,"QCD_HT500to700_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"
+                                            ,"QCD_HT700to1000_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"]
+
+
     elif sample.find("SingleMu")!=-1: patterns= ["SingleMuon"]
     elif sample.find("SingleEl")!=-1: patterns= ["SingleElectron"]
     
@@ -141,7 +149,7 @@ if __name__ == "__main__":
       jobs = open(jobList, 'w')
       outs = []
       
-      filelists = list(split_seq(filelists,20))
+      filelists = list(split_seq(filelists,50))
       
       
       for i,filelist in enumerate(filelists):
